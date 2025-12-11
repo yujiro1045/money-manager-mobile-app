@@ -3,6 +3,7 @@ import {
   HomeIcon,
   TransactionIcon,
 } from "@/components/ui/icons/tabs-icons";
+import { BACKGROUND } from "@/constants/theme2";
 import { Tabs } from "expo-router";
 import React from "react";
 
@@ -19,6 +20,9 @@ export default function TabLayout() {
           borderTopWidth: 0,
           elevation: 0,
           height: 65,
+        },
+        sceneStyle: {
+          backgroundColor: BACKGROUND,
         },
       }}
     >
