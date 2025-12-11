@@ -1,21 +1,28 @@
-import { StyleSheet, Text, View } from "react-native";
+import Header from "@/components/header/Header";
+import { BACKGROUND } from "@/constants/theme2";
+import { ScrollView, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Hola soy home</Text>
-    </View>
+    <SafeAreaView style={[styles.safe]}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+      >
+        <Header />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  title: {
-    fontSize: 20,
-    color: "#fff",
+  safe: { flex: 1, backgroundColor: BACKGROUND },
+  container: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32 },
+  rowBetween: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    marginTop: 8,
   },
 });
