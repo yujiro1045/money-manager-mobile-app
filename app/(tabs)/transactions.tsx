@@ -1,5 +1,7 @@
+import CustomModal from "@/components/ui/CustomModal";
 import { CARD, MUTED, TEXT } from "@/constants/theme2";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const SAMPLE = [
@@ -15,6 +17,9 @@ const SAMPLE = [
 ];
 
 export default function Transactions({ data = SAMPLE }: { data?: any[] }) {
+  const [selectedTx, setSelectedTx] = useState<any | null>(null);
+  const [open, setOpen] = useState(false);
+
   return (
     <SafeAreaView>
       <View style={styles.container}>
@@ -28,12 +33,20 @@ export default function Transactions({ data = SAMPLE }: { data?: any[] }) {
           keyExtractor={(i) => i.id}
           scrollEnabled={false}
           renderItem={({ item }) => (
-            <View style={styles.row}>
+            <Pressable
+              onPress={() => {
+                setSelectedTx(item);
+                setOpen(true);
+              }}
+              style={({ pressed }) => [styles.row, pressed && { opacity: 0.9 }]}
+            >
               <View style={styles.icon} />
+
               <View style={{ flex: 1 }}>
                 <Text style={styles.txTitle}>{item.title}</Text>
                 <Text style={styles.txSubtitle}>{item.subtitle}</Text>
               </View>
+
               <Text
                 style={[
                   styles.amount,
@@ -44,16 +57,28 @@ export default function Transactions({ data = SAMPLE }: { data?: any[] }) {
               >
                 {item.amount}
               </Text>
-            </View>
+            </Pressable>
           )}
         />
       </View>
+      <CustomModal
+        visible={open}
+        title={selectedTx?.title ?? ""}
+        message={`Categoría: ${selectedTx?.subtitle}\nMonto: ${selectedTx?.amount}`}
+        confirmText="Eliminar"
+        cancelText="Cerrar"
+        onCancel={() => setOpen(false)}
+        onConfirm={() => {
+          console.log("Eliminar:", selectedTx);
+          setOpen(false);
+        }}
+      />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { marginTop: 12 },
+  container: { marginTop: 12, padding: 15 },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -75,6 +100,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     shadowRadius: 8,
     elevation: 2,
+    borderWidth: 1,
+    borderColor: "red",
   },
   icon: {
     width: 44,
@@ -88,4 +115,5 @@ const styles = StyleSheet.create({
   amount: { fontWeight: "700" },
   negative: { color: "#C93545" },
   positive: { color: "#21A179" },
+  X: {},
 });

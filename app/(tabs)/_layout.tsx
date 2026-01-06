@@ -1,3 +1,4 @@
+import CustomNavBar from "@/components/ui/CustomNavBar";
 import {
   DashboardIcon,
   HomeIcon,
@@ -12,15 +13,11 @@ export default function TabLayout() {
 
   return (
     <Tabs
+      tabBar={(props) => <CustomNavBar {...props} />}
       screenOptions={{
         //tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
         headerShown: false,
-        tabBarStyle: {
-          backgroundColor: "#222a35ff",
-          borderTopWidth: 0,
-          elevation: 0,
-          height: 65,
-        },
+
         sceneStyle: {
           backgroundColor: BACKGROUND,
         },

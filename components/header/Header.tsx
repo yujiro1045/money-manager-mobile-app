@@ -1,3 +1,4 @@
+import { Colors } from "@/constants/theme";
 import { MUTED, TEXT } from "@/constants/theme2";
 import { StyleSheet, Text, View } from "react-native";
 
@@ -20,6 +21,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 16,
+    backgroundColor: Colors.light.background,
+    borderRadius: 8,
+    padding: 8,
   },
   greeting: { fontSize: 20, fontWeight: "600", color: TEXT },
   subtitle: { marginTop: 4, color: MUTED, fontSize: 13 },

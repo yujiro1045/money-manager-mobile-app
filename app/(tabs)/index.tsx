@@ -1,7 +1,7 @@
 import Header from "@/components/header/Header";
 import { BACKGROUND } from "@/constants/theme2";
 import { StatusBar } from "expo-status-bar";
-import { ScrollView, StyleSheet } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
@@ -12,6 +12,11 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Header />
+        <View>
+          <View style={styles.cuadro}></View>
+          <View style={styles.cuadro}></View>
+          <View style={styles.cuadro}></View>
+        </View>
       </ScrollView>
       <StatusBar style="dark" />
     </SafeAreaView>
@@ -26,5 +31,11 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     justifyContent: "space-between",
     marginTop: 8,
+  },
+  cuadro: {
+    width: 100,
+    height: 100,
+    borderWidth: 1,
+    borderColor: "red",
   },
 });
