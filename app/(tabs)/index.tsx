@@ -1,7 +1,7 @@
-import Header from "@/components/header/Header";
+import { logoutUser } from "@/api/auth";
 import { BACKGROUND } from "@/constants/theme2";
 import { StatusBar } from "expo-status-bar";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
@@ -11,12 +11,16 @@ export default function HomeScreen() {
         contentContainerStyle={styles.container}
         showsVerticalScrollIndicator={false}
       >
-        <Header />
-        <View>
+        <Pressable style={styles.logoutButton}>
+          <Text onPress={logoutUser} style={styles.logoutText}>
+            cerrar sesion
+          </Text>
+        </Pressable>
+        {/* <View>
           <View style={styles.cuadro}></View>
           <View style={styles.cuadro}></View>
           <View style={styles.cuadro}></View>
-        </View>
+        </View> */}
       </ScrollView>
       <StatusBar style="dark" />
     </SafeAreaView>
@@ -37,5 +41,17 @@ const styles = StyleSheet.create({
     height: 100,
     borderWidth: 1,
     borderColor: "red",
+  },
+  logoutButton: {
+    marginTop: 16,
+    backgroundColor: "#EF4444",
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  logoutText: {
+    color: "#FFFFFF",
+    fontWeight: "600",
+    fontSize: 15,
   },
 });

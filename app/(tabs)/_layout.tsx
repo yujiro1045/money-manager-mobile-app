@@ -5,11 +5,20 @@ import {
   TransactionIcon,
 } from "@/components/ui/icons/tabs-icons";
 import { BACKGROUND } from "@/constants/theme2";
-import { Tabs } from "expo-router";
+import { Redirect, Tabs } from "expo-router";
 import React from "react";
+import { useAuth } from "../../context/AuthContext";
 
 export default function TabLayout() {
   //const colorScheme = useColorScheme();
+
+  const { user, loading } = useAuth();
+
+  if (loading) return null;
+
+  if (!user) {
+    return <Redirect href="/(auth)/login" />;
+  }
 
   return (
     <Tabs

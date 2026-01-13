@@ -1,6 +1,7 @@
+import { logoutUser } from "@/api/auth";
 import CustomSelect from "@/components/ui/CustomSelect";
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 
 export default function DashboardScreen() {
   const [small, setSmall] = useState("");
@@ -9,6 +10,15 @@ export default function DashboardScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Hola soy dashboard</Text>
+
+      <Pressable style={styles.logoutButton}>
+        <Text onPress={() => Alert.alert("hola")} style={styles.logoutText}>
+          cerrar sesion
+        </Text>
+        <Text onPress={() => logoutUser} style={styles.logoutText}>
+          cerrar sesion
+        </Text>
+      </Pressable>
       <CustomSelect
         size="small"
         value={small}
@@ -61,5 +71,17 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     color: "#000",
+  },
+  logoutButton: {
+    marginTop: 16,
+    backgroundColor: "#EF4444",
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  logoutText: {
+    color: "#FFFFFF",
+    fontWeight: "600",
+    fontSize: 15,
   },
 });
