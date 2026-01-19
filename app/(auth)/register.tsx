@@ -1,4 +1,5 @@
 import { registerUser } from "@/api/auth";
+import { RegisterIcon } from "@/components/ui/icons/icons";
 import { Link } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -67,7 +68,7 @@ export default function Register() {
         <View style={styles.card}>
           <View style={styles.hero}>
             <View style={styles.logoCircle}>
-              <Text style={styles.logoText}>$</Text>
+              <RegisterIcon size={24} color="white" />
             </View>
 
             <Text style={styles.heroTitle}>Money Manager</Text>
@@ -124,7 +125,7 @@ export default function Register() {
             <Text style={styles.link}>
               ¿ya tienes una cuenta?
               <Link href="/(auth)/login">
-                <Text style={styles.linkBold}>Inicia sesion</Text>
+                <Text style={styles.linkBold}> Inicia sesion</Text>
               </Link>
             </Text>
           </View>
@@ -169,12 +170,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 
-  logoText: {
-    color: "#FFFFFF",
-    fontSize: 24,
-    fontWeight: "700",
-  },
-
   heroTitle: {
     color: "#FFFFFF",
     fontSize: 22,
@@ -196,7 +191,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
-  /* FORM */
   form: {
     padding: 24,
   },
@@ -255,6 +249,6 @@ const styles = StyleSheet.create({
 
   linkBold: {
     color: "#3bb48eff",
-    fontWeight: "600",
+    fontWeight: "bold",
   },
 });

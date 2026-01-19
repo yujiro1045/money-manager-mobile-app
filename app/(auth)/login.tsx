@@ -1,4 +1,5 @@
 import { loginUser } from "@/api/auth";
+import { LoginIcon } from "@/components/ui/icons/icons";
 import { Link } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -61,7 +62,7 @@ export default function Login() {
         <View style={styles.card}>
           <View style={styles.hero}>
             <View style={styles.logoCircle}>
-              <Text style={styles.logoText}>$</Text>
+              <LoginIcon size={24} color="white" />
             </View>
 
             <Text style={styles.heroTitle}>Bienvenido de nuevo</Text>
@@ -122,7 +123,7 @@ export default function Login() {
             <Text style={styles.link}>
               ¿No tienes cuenta?
               <Link href="/(auth)/register">
-                <Text style={styles.linkBold}>Regístrate</Text>
+                <Text style={styles.linkBold}> Regístrate</Text>
               </Link>
             </Text>
           </View>
@@ -167,12 +168,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 
-  logoText: {
-    color: "#FFFFFF",
-    fontSize: 24,
-    fontWeight: "700",
-  },
-
   heroTitle: {
     color: "#FFFFFF",
     fontSize: 22,
@@ -194,7 +189,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
-  /* FORM */
   form: {
     padding: 24,
   },
@@ -253,6 +247,6 @@ const styles = StyleSheet.create({
 
   linkBold: {
     color: "#3669C9",
-    fontWeight: "600",
+    fontWeight: "bold",
   },
 });

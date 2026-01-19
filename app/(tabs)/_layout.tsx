@@ -2,6 +2,7 @@ import CustomNavBar from "@/components/ui/CustomNavBar";
 import {
   DashboardIcon,
   HomeIcon,
+  ProfileIcon,
   TransactionIcon,
 } from "@/components/ui/icons/tabs-icons";
 import { BACKGROUND } from "@/constants/theme2";
@@ -35,14 +36,14 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: "Inicio",
           tabBarIcon: ({ color }) => <HomeIcon color={color} />,
         }}
       />
       <Tabs.Screen
         name="transactions"
         options={{
-          title: "Transactions",
+          title: "Transacciones",
           tabBarIcon: ({ color }) => <TransactionIcon color={color} />,
         }}
       />
@@ -51,6 +52,13 @@ export default function TabLayout() {
         options={{
           title: "Dashboard",
           tabBarIcon: ({ color }) => <DashboardIcon color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Perfil",
+          tabBarIcon: ({ color }) => <ProfileIcon color={color} />,
         }}
       />
     </Tabs>

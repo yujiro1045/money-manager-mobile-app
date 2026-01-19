@@ -27,3 +27,12 @@ export const DashboardIcon = ({
 }) => (
   <MaterialCommunityIcons name="monitor-dashboard" size={size} color={color} />
 );
+export const ProfileIcon = ({
+  size = 24,
+  color,
+}: {
+  size?: number;
+  color: string;
+}) => (
+  <MaterialCommunityIcons name="account-circle" size={size} color={color} />
+);

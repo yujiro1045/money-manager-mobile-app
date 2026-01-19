@@ -6,6 +6,7 @@ import { StyleSheet, TouchableOpacity, View } from "react-native";
 import {
   DashboardIcon,
   HomeIcon,
+  ProfileIcon,
   TransactionIcon,
 } from "@/components/ui/icons/tabs-icons";
 import { PRIMARY_COLOR, SECONDARY_COLOR } from "@/constants/theme2";
@@ -71,6 +72,9 @@ const CustomNavBar: React.FC<BottomTabBarProps> = ({
       case "dashboard":
         return <DashboardIcon size={18} color={color} />;
 
+      case "profile":
+        return <ProfileIcon size={18} color={color} />;
+
       default:
         return <HomeIcon size={18} color={color} />;
     }
@@ -101,12 +105,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     height: 36,
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     borderRadius: 30,
   },
   text: {
     color: PRIMARY_COLOR,
     marginLeft: 8,
+    fontSize: 12,
   },
 });
 
