@@ -24,8 +24,8 @@ const CustomNavBar: React.FC<BottomTabBarProps> = ({
           options.tabBarLabel !== undefined
             ? options.tabBarLabel
             : options.title !== undefined
-            ? options.title
-            : route.name;
+              ? options.title
+              : route.name;
 
         const isFocused = state.index === index;
 
@@ -52,7 +52,7 @@ const CustomNavBar: React.FC<BottomTabBarProps> = ({
           >
             {getIconByRouteName(
               route.name,
-              isFocused ? PRIMARY_COLOR : SECONDARY_COLOR
+              isFocused ? PRIMARY_COLOR : SECONDARY_COLOR,
             )}
             {isFocused && <Text style={styles.text}>{label as string}</Text>}
           </TouchableOpacity>
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: PRIMARY_COLOR,
-    width: "80%",
+    width: "90%",
     alignSelf: "center",
     bottom: 25,
     borderRadius: 30,
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.3,
     shadowRadius: 5,
-    gap: 10,
+    gap: 15,
   },
   tabItem: {
     flexDirection: "row",

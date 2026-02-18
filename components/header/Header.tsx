@@ -1,13 +1,15 @@
 import { Colors } from "@/constants/theme";
 import { MUTED, TEXT } from "@/constants/theme2";
+import { useAuth } from "@/context/AuthContext";
 import { StyleSheet, Text, View } from "react-native";
 
-export default function Header({ name = "Juan" }: { name?: string }) {
+export default function Header() {
+  const { user } = useAuth();
   return (
     <View style={styles.header}>
       <View style={styles.profilePlaceholder} />
       <View>
-        <Text style={styles.greeting}>Bienvenido {name}</Text>
+        <Text style={styles.greeting}>Bienvenido {user?.displayName}</Text>
         <Text style={styles.subtitle}>Tu resumen financiero de hoy</Text>
       </View>
     </View>

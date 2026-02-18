@@ -7,6 +7,7 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 
+import { TransactionsProvider } from "@/context/TransactionsContext";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { AuthProvider } from "../context/AuthContext";
 
@@ -15,13 +16,17 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(auth)" />
-          <Stack.Screen name="(tabs)" />
-        </Stack>
-        <StatusBar style="dark" />
-      </ThemeProvider>
+      <TransactionsProvider>
+        <ThemeProvider
+          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+        >
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(auth)" />
+            <Stack.Screen name="(tabs)" />
+          </Stack>
+          <StatusBar style="dark" />
+        </ThemeProvider>
+      </TransactionsProvider>
     </AuthProvider>
   );
 }

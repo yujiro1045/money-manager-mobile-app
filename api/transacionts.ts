@@ -6,7 +6,7 @@ import {
   getDocs,
   orderBy,
   query,
-  where,
+  serverTimestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
 
@@ -22,9 +22,8 @@ interface Transaction {
 
 export const getTransactions = async (userId: string) => {
   const q = query(
-    collection(db, "transactions"),
-    where("userId", "==", userId),
-    orderBy("createdAt", "desc")
+    collection(db, "users", userId, "transactions"),
+    orderBy("createdAt", "desc"),
   );
 
   const snapshot = await getDocs(q);
@@ -35,10 +34,16 @@ export const getTransactions = async (userId: string) => {
   }));
 };
 
-export const createTransaction = async (transaction: Transaction) => {
-  return addDoc(collection(db, "transactions"), transaction);
+export const createTransaction = async (
+  userId: string,
+  transaction: Omit<Transaction, "id" | "createdAt">,
+) => {
+  return addDoc(collection(db, "users", userId, "transactions"), {
+    ...transaction,
+    createdAt: serverTimestamp(),
+  });
 };
 
-export const deleteTransaction = async (id: string) => {
-  return deleteDoc(doc(db, "transactions", id));
+export const deleteTransaction = async (userId: string, id: string) => {
+  return deleteDoc(doc(db, "users", userId, "transactions", id));
 };

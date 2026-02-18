@@ -1,9 +1,11 @@
 import { logoutUser } from "@/api/auth";
 import { BACKGROUND } from "@/constants/theme2";
 import { useAuth } from "@/context/AuthContext";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import {
-  Image,
+  ScrollView,
   StyleSheet,
   Switch,
   Text,
@@ -13,6 +15,9 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Profile() {
+  const gotToEditProfile = () => {
+    router.push("/profile/Edit");
+  };
   const [darkMode, setDarkMode] = useState(true);
 
   const { loading, user } = useAuth();
@@ -28,32 +33,46 @@ export default function Profile() {
   }
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.container}>
-        {/* 🔹 Name Card */}
-        <View style={styles.nameCard}>
-          <Image
-            source={{ uri: "https://i.pravatar.cc/150" }}
-            style={styles.avatar}
-          />
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Perfil</Text>
+      </View>
+
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* User Card */}
+        <View style={styles.userCard}>
           <Text style={styles.name}>{user.displayName}</Text>
           <Text style={styles.email}>{user.email}</Text>
         </View>
 
-        <View style={styles.optionsCard}>
-          <Option label="Editar perfil" />
+        {/* Settings */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Configuración</Text>
+
+          <Option
+            label="Editar perfil"
+            onPress={() => router.push("/profile/Edit")}
+          />
           <Option label="Lenguaje" value="Español" />
           <Option
             label="Tema oscuro"
             right={<Switch value={darkMode} onValueChange={setDarkMode} />}
           />
-
-          <View style={styles.divider} />
-
-          <TouchableOpacity onPress={logoutUser}>
-            <Text style={styles.logout}>Cerrar sesión</Text>
-          </TouchableOpacity>
         </View>
-      </View>
+
+        {/* Support */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Soporte</Text>
+          <Option label="Centro de ayuda" />
+        </View>
+
+        <TouchableOpacity style={styles.logoutButton} onPress={logoutUser}>
+          <Text style={styles.logoutText}>Cerrar sesión</Text>
+        </TouchableOpacity>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -62,16 +81,30 @@ function Option({
   label,
   value,
   right,
+  onPress,
 }: {
   label: string;
   value?: string;
   right?: React.ReactNode;
+  onPress?: () => void;
 }) {
   return (
-    <View style={styles.option}>
+    <TouchableOpacity
+      style={styles.option}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
       <Text style={styles.optionText}>{label}</Text>
-      {right ? right : <Text style={styles.optionValue}>{value ?? ">"}</Text>}
-    </View>
+
+      {right ? (
+        right
+      ) : (
+        <View style={styles.optionRight}>
+          {value && <Text style={styles.optionValue}>{value}</Text>}
+          <Ionicons name="chevron-forward" size={18} color="#6B7280" />
+        </View>
+      )}
+    </TouchableOpacity>
   );
 }
 
@@ -80,62 +113,112 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: BACKGROUND,
   },
-  container: {
-    flex: 1,
-    padding: 16,
-    gap: 16,
+
+  header: {
+    height: 120,
+    backgroundColor: "#1F2A5A",
+    justifyContent: "center",
+    padding: 20,
   },
-  nameCard: {
-    backgroundColor: "#F4F7FF",
-    borderRadius: 16,
-    alignItems: "center",
-    paddingVertical: 24,
-  },
-  avatar: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    marginBottom: 12,
-  },
-  name: {
-    color: "#000",
-    fontSize: 18,
+
+  headerTitle: {
+    color: "#fff",
+    fontSize: 20,
     fontWeight: "600",
   },
+
+  container: {
+    padding: 16,
+    gap: 16,
+    marginTop: -40,
+  },
+  scrollContent: {
+    padding: 16,
+    gap: 16,
+    paddingBottom: 120,
+  },
+  userCard: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
+    alignItems: "center",
+
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+
+  name: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#111827",
+  },
+
   email: {
-    color: "#1c1c1e",
     fontSize: 14,
+    color: "#6B7280",
     marginTop: 4,
   },
-  optionsCard: {
-    backgroundColor: "#F4F7FF",
+
+  section: {
+    backgroundColor: "#fff",
     borderRadius: 16,
     padding: 16,
     gap: 12,
+
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
   },
+
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#6B7280",
+    marginBottom: 8,
+  },
+
   option: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 12,
+    backgroundColor: "#F3F4F6",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
   },
+
   optionText: {
-    color: "#000",
     fontSize: 16,
+    color: "#111827",
   },
+
+  optionRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+
   optionValue: {
-    color: "#000",
-    fontSize: 16,
+    fontSize: 14,
+    color: "#6B7280",
   },
-  divider: {
-    height: 1,
-    backgroundColor: "#2A2A30",
-    marginVertical: 8,
-  },
-  logout: {
-    color: "#bf0c0c",
-    fontSize: 16,
-    textAlign: "center",
+
+  logoutButton: {
     marginTop: 8,
+    padding: 14,
+    borderRadius: 14,
+    backgroundColor: "#FEE2E2",
+  },
+
+  logoutText: {
+    color: "#DC2626",
+    textAlign: "center",
+    fontWeight: "600",
+    fontSize: 16,
   },
 });
