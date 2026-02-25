@@ -1,3 +1,5 @@
+import { db } from "@/api/firebase";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import React, { useState } from "react";
 import {
   StyleSheet,
@@ -46,16 +48,28 @@ export default function CardTransaction({ onAddTransaction }: Props) {
     setNewCategory("");
   };
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!amount || isNaN(Number(amount)) || !selectedCategory) return;
 
-    onAddTransaction({
+    /* onAddTransaction({
       type: isIncome ? "income" : "expense",
       amount: Number(amount),
       category: selectedCategory,
-    });
+    }); */
+    try {
+      await addDoc(collection(db, "transactions"), {
+        type: isIncome ? "income" : "expense",
+        amount: Number(amount),
+        category: selectedCategory,
+        createdAt: serverTimestamp(),
+      });
+      setAmount("");
+      setSelectedCategory(null);
 
-    setAmount("");
+      console.log("Transaccion guardada en Firebase");
+    } catch (error) {
+      console.error("Error guardando transaccion:", error);
+    }
   };
 
   return (

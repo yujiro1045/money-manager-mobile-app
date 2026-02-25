@@ -1,78 +1,163 @@
 import CustomModal from "@/components/ui/CustomModal";
 import { CARD, MUTED, TEXT } from "@/constants/theme2";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const SAMPLE = [
-  { id: "t1", title: "Almuerzo", subtitle: "Comida", amount: "-25.000" },
-  { id: "t2", title: "Transporte", subtitle: "Taxi", amount: "-6.000" },
-  { id: "t3", title: "Freelance", subtitle: "Proyecto X", amount: "+420.000" },
-  {
-    id: "t4",
-    title: "Transporte",
-    subtitle: "Gasolina de moto",
-    amount: "-40.000",
-  },
-];
+import { db } from "@/api/firebase";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+} from "firebase/firestore";
 
-export default function Transactions({ data = SAMPLE }: { data?: any[] }) {
-  const [selectedTx, setSelectedTx] = useState<any | null>(null);
-  const [open, setOpen] = useState(false);
+type Transaction = {
+  id: string;
+  type: "ingreso" | "gasto";
+  amount: number;
+  category: string;
+};
+
+export default function Transactions() {
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+
+  const [modalType, setModalType] = useState<
+    "detail" | "confirm" | "success" | null
+  >(null);
+
+  useEffect(() => {
+    const q = query(
+      collection(db, "transactions"),
+      orderBy("createdAt", "desc"),
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data: Transaction[] = snapshot.docs.map((docItem) => ({
+        id: docItem.id,
+        ...docItem.data(),
+      })) as Transaction[];
+
+      setTransactions(data);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const closeAllModal = () => {
+    setModalType(null);
+  };
+
+  const handleDeleteConfirmed = async () => {
+    if (!selectedTx) return;
+
+    try {
+      await deleteDoc(doc(db, "transactions", selectedTx.id));
+
+      setModalType(null);
+      setSelectedTx(null);
+
+      setTimeout(() => {
+        setModalType("success");
+      }, 200);
+    } catch (error) {
+      console.error("Error eliminando:", error);
+    }
+  };
+
+  const handleOpenConfirm = () => {
+    setModalType("confirm");
+  };
 
   return (
     <SafeAreaView>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Ultimas transacciones</Text>
-          <Text style={styles.viewAll}>Ver todas</Text>
+          <Text style={styles.title}>Últimas transacciones</Text>
         </View>
 
-        <FlatList
-          data={data}
-          keyExtractor={(i) => i.id}
-          scrollEnabled={false}
-          renderItem={({ item }) => (
-            <Pressable
-              onPress={() => {
-                setSelectedTx(item);
-                setOpen(true);
-              }}
-              style={({ pressed }) => [styles.row, pressed && { opacity: 0.9 }]}
-            >
-              <View style={styles.icon} />
+        {transactions.length === 0 ? (
+          <Text style={styles.emptyText}>Aún no hay transacciones</Text>
+        ) : (
+          <FlatList
+            data={transactions}
+            keyExtractor={(item) => item.id}
+            scrollEnabled={false}
+            renderItem={({ item }) => {
+              const formattedAmount =
+                item.type === "gasto" ? `- ${item.amount}` : `+ ${item.amount}`;
 
-              <View style={{ flex: 1 }}>
-                <Text style={styles.txTitle}>{item.title}</Text>
-                <Text style={styles.txSubtitle}>{item.subtitle}</Text>
-              </View>
+              return (
+                <Pressable
+                  onPress={() => {
+                    setSelectedTx(item);
+                    setModalType("detail");
+                  }}
+                  style={({ pressed }) => [
+                    styles.row,
+                    pressed && { opacity: 0.9 },
+                  ]}
+                >
+                  <View style={styles.icon} />
 
-              <Text
-                style={[
-                  styles.amount,
-                  item.amount.startsWith("-")
-                    ? styles.negative
-                    : styles.positive,
-                ]}
-              >
-                {item.amount}
-              </Text>
-            </Pressable>
-          )}
-        />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.txTitle}>{item.category}</Text>
+                    <Text style={styles.txSubtitle}>
+                      {item.type === "ingreso" ? "Ingreso" : "Gasto"}
+                    </Text>
+                  </View>
+
+                  <Text
+                    style={[
+                      styles.amount,
+                      item.type === "gasto" ? styles.negative : styles.positive,
+                    ]}
+                  >
+                    {formattedAmount}
+                  </Text>
+                </Pressable>
+              );
+            }}
+          />
+        )}
       </View>
-      <CustomModal
-        visible={open}
-        title={selectedTx?.title ?? ""}
-        message={`Categoría: ${selectedTx?.subtitle}\nMonto: ${selectedTx?.amount}`}
-        confirmText="Eliminar"
-        cancelText="Cerrar"
-        onCancel={() => setOpen(false)}
-        onConfirm={() => {
-          console.log("Eliminar:", selectedTx);
-          setOpen(false);
-        }}
-      />
+      {modalType === "detail" && (
+        <CustomModal
+          visible
+          title={selectedTx?.category ?? ""}
+          message={`Tipo: ${selectedTx?.type}\nMonto: ${selectedTx?.amount}`}
+          confirmText="Eliminar"
+          cancelText="Cerrar"
+          onCancel={closeAllModal}
+          onConfirm={handleOpenConfirm}
+        />
+      )}
+
+      {modalType === "confirm" && (
+        <CustomModal
+          visible
+          title="Confirmar eliminación"
+          message="¿Estás seguro de que deseas eliminar esta transacción?"
+          confirmText="Sí, eliminar"
+          cancelText="Cancelar"
+          onCancel={closeAllModal}
+          onConfirm={handleDeleteConfirmed}
+        />
+      )}
+
+      {modalType === "success" && (
+        <CustomModal
+          key={modalType}
+          visible
+          title="Transacción eliminada"
+          message="La transacción fue eliminada con éxito."
+          confirmText="Ok"
+          onConfirm={() => setModalType(null)}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -115,5 +200,9 @@ const styles = StyleSheet.create({
   amount: { fontWeight: "700" },
   negative: { color: "#C93545" },
   positive: { color: "#21A179" },
-  X: {},
+  emptyText: {
+    textAlign: "center",
+    marginTop: 20,
+    color: MUTED,
+  },
 });
