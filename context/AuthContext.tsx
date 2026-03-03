@@ -38,19 +38,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }: UpdateUserProfileParams) => {
     if (!auth.currentUser) return;
 
-    // 🔹 Actualiza nombre en Firebase Auth
     await updateProfile(auth.currentUser, {
       displayName,
     });
 
-    // 🔹 Refresca el usuario local
     setUser({
       ...auth.currentUser,
       displayName,
     } as User);
-
-    // ⚠️ El teléfono NO se puede actualizar directo en Auth
-    // Guárdalo en Firestore si lo necesitas persistir
   };
 
   return (

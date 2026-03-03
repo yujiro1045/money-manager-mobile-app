@@ -5,6 +5,7 @@ import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { db } from "@/api/firebase";
+import { useAuth } from "@/context/AuthContext";
 import {
   collection,
   deleteDoc,
@@ -16,12 +17,14 @@ import {
 
 type Transaction = {
   id: string;
-  type: "ingreso" | "gasto";
+  type: "income" | "expense";
   amount: number;
   category: string;
 };
 
 export default function Transactions() {
+  const { user } = useAuth();
+
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
 
@@ -30,8 +33,9 @@ export default function Transactions() {
   >(null);
 
   useEffect(() => {
+    if (!user) return;
     const q = query(
-      collection(db, "transactions"),
+      collection(db, "users", user.uid, "transactions"),
       orderBy("createdAt", "desc"),
     );
 
@@ -45,24 +49,21 @@ export default function Transactions() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [user]);
 
   const closeAllModal = () => {
     setModalType(null);
   };
 
   const handleDeleteConfirmed = async () => {
-    if (!selectedTx) return;
-
+    if (!selectedTx || !user) return;
     try {
-      await deleteDoc(doc(db, "transactions", selectedTx.id));
-
+      await deleteDoc(
+        doc(db, "users", user.uid, "transactions", selectedTx.id),
+      );
       setModalType(null);
       setSelectedTx(null);
-
-      setTimeout(() => {
-        setModalType("success");
-      }, 200);
+      setTimeout(() => setModalType("success"), 200);
     } catch (error) {
       console.error("Error eliminando:", error);
     }
@@ -88,7 +89,9 @@ export default function Transactions() {
             scrollEnabled={false}
             renderItem={({ item }) => {
               const formattedAmount =
-                item.type === "gasto" ? `- ${item.amount}` : `+ ${item.amount}`;
+                item.type === "expense"
+                  ? `- ${item.amount}`
+                  : `+ ${item.amount}`;
 
               return (
                 <Pressable
@@ -106,14 +109,16 @@ export default function Transactions() {
                   <View style={{ flex: 1 }}>
                     <Text style={styles.txTitle}>{item.category}</Text>
                     <Text style={styles.txSubtitle}>
-                      {item.type === "ingreso" ? "Ingreso" : "Gasto"}
+                      {item.type === "income" ? "Ingreso" : "Gasto"}
                     </Text>
                   </View>
 
                   <Text
                     style={[
                       styles.amount,
-                      item.type === "gasto" ? styles.negative : styles.positive,
+                      item.type === "expense"
+                        ? styles.negative
+                        : styles.positive,
                     ]}
                   >
                     {formattedAmount}

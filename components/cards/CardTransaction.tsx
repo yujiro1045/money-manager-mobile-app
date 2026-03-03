@@ -1,4 +1,5 @@
 import { db } from "@/api/firebase";
+import { useAuth } from "@/context/AuthContext";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import React, { useState } from "react";
 import {
@@ -10,22 +11,15 @@ import {
   View,
 } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
-type Transaction = {
-  type: "income" | "expense";
-  amount: number;
-  category: string;
-};
-
-type Props = {
-  onAddTransaction: (transaction: Transaction) => void;
-};
 
 type CategoryItem = {
   label: string;
   value: string;
 };
 
-export default function CardTransaction({ onAddTransaction }: Props) {
+export default function CardTransaction() {
+  const { user } = useAuth();
+
   const [isIncome, setIsIncome] = useState(true);
   const [amount, setAmount] = useState("");
   const [newCategory, setNewCategory] = useState("");
@@ -37,27 +31,19 @@ export default function CardTransaction({ onAddTransaction }: Props) {
 
   const handleCreateCategory = () => {
     if (!newCategory.trim()) return;
-
-    const newItem: CategoryItem = {
-      label: newCategory,
-      value: newCategory,
-    };
-
-    setCategories((prev) => [...prev, newItem]);
+    setCategories((prev) => [
+      ...prev,
+      { label: newCategory, value: newCategory },
+    ]);
     setSelectedCategory(newCategory);
     setNewCategory("");
   };
 
   const handleAdd = async () => {
-    if (!amount || isNaN(Number(amount)) || !selectedCategory) return;
+    if (!amount || isNaN(Number(amount)) || !selectedCategory || !user) return;
 
-    /* onAddTransaction({
-      type: isIncome ? "income" : "expense",
-      amount: Number(amount),
-      category: selectedCategory,
-    }); */
     try {
-      await addDoc(collection(db, "transactions"), {
+      await addDoc(collection(db, "users", user.uid, "transactions"), {
         type: isIncome ? "income" : "expense",
         amount: Number(amount),
         category: selectedCategory,
@@ -65,10 +51,8 @@ export default function CardTransaction({ onAddTransaction }: Props) {
       });
       setAmount("");
       setSelectedCategory(null);
-
-      console.log("Transaccion guardada en Firebase");
     } catch (error) {
-      console.error("Error guardando transaccion:", error);
+      console.error("Error guardando transacción:", error);
     }
   };
 
