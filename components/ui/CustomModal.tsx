@@ -20,9 +20,13 @@ const CustomModal: React.FC<CustomModalProps> = ({
   onConfirm,
   onCancel,
 }) => {
-  if (!visible) return null;
   return (
-    <Modal transparent animationType="fade" statusBarTranslucent>
+    <Modal
+      transparent
+      animationType="fade"
+      statusBarTranslucent
+      visible={visible}
+    >
       <View style={styles.overlay}>
         <View style={styles.container}>
           <Text style={styles.title}>{title}</Text>

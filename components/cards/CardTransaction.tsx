@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
+import CustomModal from "../ui/CustomModal";
 
 type CategoryItem = {
   label: string;
@@ -24,6 +25,7 @@ export default function CardTransaction() {
   const [amount, setAmount] = useState("");
   const [newCategory, setNewCategory] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [openModal, setOpenModal] = useState(false);
 
   const [categories, setCategories] = useState<CategoryItem[]>([
     { label: "General", value: "General" },
@@ -49,63 +51,75 @@ export default function CardTransaction() {
         category: selectedCategory,
         createdAt: serverTimestamp(),
       });
+
       setAmount("");
       setSelectedCategory(null);
+      setIsIncome(true);
+      setOpenModal(true);
     } catch (error) {
       console.error("Error guardando transacción:", error);
     }
   };
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.title}>Nueva Transacción</Text>
+    <>
+      <View style={styles.card}>
+        <Text style={styles.title}>Nueva Transacción</Text>
 
-      <View style={styles.switchRow}>
-        <Text style={{ color: isIncome ? "green" : "#999" }}>Ingreso</Text>
-        <Switch
-          value={!isIncome}
-          onValueChange={() => setIsIncome(!isIncome)}
+        <View style={styles.switchRow}>
+          <Text style={{ color: isIncome ? "green" : "#999" }}>Ingreso</Text>
+          <Switch
+            value={!isIncome}
+            onValueChange={() => setIsIncome(!isIncome)}
+          />
+          <Text style={{ color: !isIncome ? "red" : "#999" }}>Gasto</Text>
+        </View>
+
+        <View style={styles.categoryRow}>
+          <TextInput
+            placeholder="Nueva categoría"
+            value={newCategory}
+            onChangeText={setNewCategory}
+            style={[styles.input, { flex: 1, marginBottom: 0 }]}
+          />
+          <TouchableOpacity
+            style={styles.createButton}
+            onPress={handleCreateCategory}
+          >
+            <Text style={styles.createButtonText}>Crear</Text>
+          </TouchableOpacity>
+        </View>
+
+        <Dropdown
+          style={styles.dropdown}
+          data={categories}
+          labelField="label"
+          valueField="value"
+          placeholder="Selecciona categoría"
+          value={selectedCategory}
+          onChange={(item) => setSelectedCategory(item.value)}
         />
-        <Text style={{ color: !isIncome ? "red" : "#999" }}>Gasto</Text>
-      </View>
 
-      <View style={styles.categoryRow}>
         <TextInput
-          placeholder="Nueva categoría"
-          value={newCategory}
-          onChangeText={setNewCategory}
-          style={[styles.input, { flex: 1, marginBottom: 0 }]}
+          placeholder="Monto"
+          value={amount}
+          onChangeText={setAmount}
+          keyboardType="numeric"
+          style={styles.input}
         />
-        <TouchableOpacity
-          style={styles.createButton}
-          onPress={handleCreateCategory}
-        >
-          <Text style={styles.createButtonText}>Crear</Text>
+
+        <TouchableOpacity style={styles.button} onPress={handleAdd}>
+          <Text style={styles.buttonText}>Agregar</Text>
         </TouchableOpacity>
       </View>
-
-      <Dropdown
-        style={styles.dropdown}
-        data={categories}
-        labelField="label"
-        valueField="value"
-        placeholder="Selecciona categoría"
-        value={selectedCategory}
-        onChange={(item) => setSelectedCategory(item.value)}
+      <CustomModal
+        visible={openModal}
+        title="¡Transacción  añadida!"
+        message="Tu transacción se registro correctamente."
+        confirmText="Aceptar"
+        onConfirm={() => setOpenModal(false)}
       />
-
-      <TextInput
-        placeholder="Monto"
-        value={amount}
-        onChangeText={setAmount}
-        keyboardType="numeric"
-        style={styles.input}
-      />
-
-      <TouchableOpacity style={styles.button} onPress={handleAdd}>
-        <Text style={styles.buttonText}>Agregar</Text>
-      </TouchableOpacity>
-    </View>
+    </>
   );
 }
 
