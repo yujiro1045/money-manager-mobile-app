@@ -33,6 +33,7 @@ export default function Transactions() {
   >(null);
 
   useEffect(() => {
+    console.log("useEffect user:", user?.uid);
     if (!user) return;
     const q = query(
       collection(db, "users", user.uid, "transactions"),
@@ -40,6 +41,7 @@ export default function Transactions() {
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
+      console.log("snapshot docs:", snapshot.docs.length);
       const data: Transaction[] = snapshot.docs.map((docItem) => ({
         id: docItem.id,
         ...docItem.data(),
