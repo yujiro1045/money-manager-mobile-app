@@ -1,39 +1,53 @@
+import { db } from "@/api/firebase";
 import {
-  createTransaction,
-  deleteTransaction,
-  getTransactions,
-} from "@/api/transacionts";
-import { useAuth } from "@/context/AuthContext";
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+  serverTimestamp,
+} from "firebase/firestore";
 import { createContext, useContext, useEffect, useState } from "react";
+import { useAuth } from "./AuthContext";
 
 export interface Transaction {
   id: string;
-  title: string;
-  category: string;
-  amount: number;
   type: "income" | "expense";
-  createdAt: number;
+  amount: number;
+  category: string;
+  createdAt: any;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  createdAt: any;
 }
 
 type CreateTxInput = {
-  title: string;
-  category: string;
-  amount: number;
   type: "income" | "expense";
+  amount: number;
+  category: string;
 };
 
 type TxContextType = {
   transactions: Transaction[];
+  categories: Category[];
   loading: boolean;
   addTransaction: (tx: CreateTxInput) => Promise<void>;
   removeTransaction: (id: string) => Promise<void>;
+  addCategory: (name: string) => Promise<void>;
 };
 
 const TransactionsContext = createContext<TxContextType>({
   transactions: [],
+  categories: [],
   loading: true,
   addTransaction: async () => {},
   removeTransaction: async () => {},
+  addCategory: async () => {},
 });
 
 export const TransactionsProvider = ({
@@ -43,59 +57,82 @@ export const TransactionsProvider = ({
 }) => {
   const { user } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
 
-    const fetchTransactions = async () => {
-      setLoading(true);
-      const data = await getTransactions(user.uid);
+    const q = query(
+      collection(db, "users", user.uid, "transactions"),
+      orderBy("createdAt", "desc"),
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data: Transaction[] = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Transaction[];
       setTransactions(data);
       setLoading(false);
-    };
+    });
 
-    fetchTransactions();
+    return () => unsubscribe();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const q = query(
+      collection(db, "users", user.uid, "categories"),
+      orderBy("createdAt", "asc"),
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data: Category[] = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Category[];
+      setCategories(data);
+    });
+
+    return () => unsubscribe();
   }, [user]);
 
   const addTransaction = async (tx: CreateTxInput) => {
     if (!user) return;
-
-    // 1️⃣ crear transacción local (optimista)
-    const optimisticTx: Transaction = {
-      id: Date.now().toString(),
-      title: tx.title,
-      category: tx.category,
-      amount: tx.amount,
-      type: tx.type,
-      createdAt: Date.now(),
-    };
-
-    setTransactions((prev) => [optimisticTx, ...prev]);
-
-    // 2️⃣ guardar en Firebase
-    await createTransaction(user.uid, {
+    await addDoc(collection(db, "users", user.uid, "transactions"), {
       ...tx,
-      userId: user.uid,
+      createdAt: serverTimestamp(),
     });
   };
 
   const removeTransaction = async (id: string) => {
     if (!user) return;
+    await deleteDoc(doc(db, "users", user.uid, "transactions", id));
+  };
 
-    // optimista
-    setTransactions((prev) => prev.filter((tx) => tx.id !== id));
-
-    await deleteTransaction(user.uid, id);
+  const addCategory = async (name: string) => {
+    if (!user) return;
+    const exists = categories.some(
+      (c) => c.name.toLowerCase() === name.trim().toLowerCase(),
+    );
+    if (exists) return;
+    await addDoc(collection(db, "users", user.uid, "categories"), {
+      name: name.trim(),
+      createdAt: serverTimestamp(),
+    });
   };
 
   return (
     <TransactionsContext.Provider
       value={{
         transactions,
+        categories,
         loading,
         addTransaction,
         removeTransaction,
+        addCategory,
       }}
     >
       {children}

@@ -1,3 +1,4 @@
+import CardBalance from "@/components/cards/CardBalance";
 import CardTransaction from "@/components/cards/CardTransaction";
 import Header from "@/components/header/Header";
 import { BACKGROUND } from "@/constants/theme2";
@@ -13,7 +14,7 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Header />
-
+        <CardBalance />
         <CardTransaction />
       </ScrollView>
       <StatusBar style="dark" />
@@ -23,7 +24,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: BACKGROUND },
-  container: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32 },
+  container: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 100 },
   rowBetween: {
     flexDirection: "row",
     alignItems: "flex-start",

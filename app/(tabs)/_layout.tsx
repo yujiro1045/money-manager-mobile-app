@@ -11,8 +11,6 @@ import React from "react";
 import { useAuth } from "../../context/AuthContext";
 
 export default function TabLayout() {
-  //const colorScheme = useColorScheme();
-
   const { user, loading } = useAuth();
 
   if (loading) return null;
@@ -25,9 +23,7 @@ export default function TabLayout() {
     <Tabs
       tabBar={(props) => <CustomNavBar {...props} />}
       screenOptions={{
-        //tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
         headerShown: false,
-
         sceneStyle: {
           backgroundColor: BACKGROUND,
         },

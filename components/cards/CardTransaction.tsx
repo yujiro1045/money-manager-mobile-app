@@ -1,6 +1,4 @@
-import { db } from "@/api/firebase";
-import { useAuth } from "@/context/AuthContext";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { useTransactions } from "@/context/TransactionsContext";
 import React, { useState } from "react";
 import {
   StyleSheet,
@@ -18,8 +16,12 @@ type CategoryItem = {
   value: string;
 };
 
+const DEFAULT_CATEGORIES: CategoryItem[] = [
+  { label: "General", value: "General" },
+];
+
 export default function CardTransaction() {
-  const { user } = useAuth();
+  const { addTransaction, addCategory, categories } = useTransactions();
 
   const [isIncome, setIsIncome] = useState(true);
   const [amount, setAmount] = useState("");
@@ -27,38 +29,32 @@ export default function CardTransaction() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [openModal, setOpenModal] = useState(false);
 
-  const [categories, setCategories] = useState<CategoryItem[]>([
-    { label: "General", value: "General" },
-  ]);
+  // Combina "General" con las categorías del provider
+  const dropdownCategories: CategoryItem[] = [
+    ...DEFAULT_CATEGORIES,
+    ...categories
+      .filter((c) => c.name !== "General")
+      .map((c) => ({ label: c.name, value: c.name })),
+  ];
 
-  const handleCreateCategory = () => {
+  const handleCreateCategory = async () => {
     if (!newCategory.trim()) return;
-    setCategories((prev) => [
-      ...prev,
-      { label: newCategory, value: newCategory },
-    ]);
-    setSelectedCategory(newCategory);
+    await addCategory(newCategory.trim());
+    setSelectedCategory(newCategory.trim());
     setNewCategory("");
   };
 
   const handleAdd = async () => {
-    if (!amount || isNaN(Number(amount)) || !selectedCategory || !user) return;
-
-    try {
-      await addDoc(collection(db, "users", user.uid, "transactions"), {
-        type: isIncome ? "income" : "expense",
-        amount: Number(amount),
-        category: selectedCategory,
-        createdAt: serverTimestamp(),
-      });
-
-      setAmount("");
-      setSelectedCategory(null);
-      setIsIncome(true);
-      setOpenModal(true);
-    } catch (error) {
-      console.error("Error guardando transacción:", error);
-    }
+    if (!amount || isNaN(Number(amount)) || !selectedCategory) return;
+    await addTransaction({
+      type: isIncome ? "income" : "expense",
+      amount: Number(amount),
+      category: selectedCategory,
+    });
+    setAmount("");
+    setSelectedCategory(null);
+    setIsIncome(true);
+    setOpenModal(true);
   };
 
   return (
@@ -92,7 +88,7 @@ export default function CardTransaction() {
 
         <Dropdown
           style={styles.dropdown}
-          data={categories}
+          data={dropdownCategories}
           labelField="label"
           valueField="value"
           placeholder="Selecciona categoría"
@@ -112,10 +108,11 @@ export default function CardTransaction() {
           <Text style={styles.buttonText}>Agregar</Text>
         </TouchableOpacity>
       </View>
+
       <CustomModal
         visible={openModal}
-        title="¡Transacción  añadida!"
-        message="Tu transacción se registro correctamente."
+        title="¡Transacción añadida!"
+        message="Tu transacción se registró correctamente."
         confirmText="Aceptar"
         onConfirm={() => setOpenModal(false)}
       />
