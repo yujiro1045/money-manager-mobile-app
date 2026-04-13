@@ -1,6 +1,6 @@
 import CardBalance from "@/components/cards/CardBalance";
-import CardTransaction from "@/components/cards/CardTransaction";
 import Header from "@/components/header/Header";
+import RecentTransactions from "@/components/transactions/RecentTransactions";
 import { BACKGROUND } from "@/constants/theme2";
 import { StatusBar } from "expo-status-bar";
 import { ScrollView, StyleSheet } from "react-native";
@@ -15,7 +15,9 @@ export default function HomeScreen() {
       >
         <Header />
         <CardBalance />
-        <CardTransaction />
+        {/* <CardTransaction /> */}
+
+        <RecentTransactions />
       </ScrollView>
       <StatusBar style="dark" />
     </SafeAreaView>

@@ -20,8 +20,12 @@ const DEFAULT_CATEGORIES: CategoryItem[] = [
   { label: "General", value: "General" },
 ];
 
-export default function CardTransaction() {
-  const { addTransaction, addCategory, categories } = useTransactions();
+type Props = {
+  onSubmit: VoidFunction;
+};
+
+export default function CardTransaction({ onSubmit }: Props) {
+  const { addCategory, categories, addTransaction } = useTransactions();
 
   const [isIncome, setIsIncome] = useState(true);
   const [amount, setAmount] = useState("");
@@ -29,7 +33,6 @@ export default function CardTransaction() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [openModal, setOpenModal] = useState(false);
 
-  // Combina "General" con las categorías del provider
   const dropdownCategories: CategoryItem[] = [
     ...DEFAULT_CATEGORIES,
     ...categories
