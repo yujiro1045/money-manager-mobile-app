@@ -74,9 +74,10 @@ export default function CardTransaction({ onSubmit }: Props) {
           <Text style={{ color: !isIncome ? "red" : "#999" }}>Gasto</Text>
         </View>
 
-        <View style={styles.categoryRow}>
+        <View style={styles.inputCategory}>
           <TextInput
             placeholder="Nueva categoría"
+            placeholderTextColor="#000"
             value={newCategory}
             onChangeText={setNewCategory}
             style={[styles.input, { flex: 1, marginBottom: 0 }]}
@@ -101,6 +102,7 @@ export default function CardTransaction({ onSubmit }: Props) {
 
         <TextInput
           placeholder="Monto"
+          placeholderTextColor="#000"
           value={amount}
           onChangeText={setAmount}
           keyboardType="numeric"
@@ -146,7 +148,7 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 16,
   },
-  categoryRow: {
+  inputCategory: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
@@ -157,6 +159,9 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 12,
     marginBottom: 12,
+  },
+  inputTextColor: {
+    color: "#000",
   },
   dropdown: {
     backgroundColor: "#F3F4F6",
