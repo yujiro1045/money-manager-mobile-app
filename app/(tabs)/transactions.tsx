@@ -6,6 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { db } from "@/api/firebase";
 import { useAuth } from "@/context/AuthContext";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import {
   collection,
   deleteDoc,
@@ -75,74 +76,68 @@ export default function Transactions() {
     setModalType("confirm");
   };
 
-  return (
-    <SafeAreaView>
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Últimas transacciones</Text>
+  const renderItem = ({ item }: { item: Transaction }) => {
+    const isExpense = item.type === "expense";
+    return (
+      <Pressable
+        onPress={() => {
+          setSelectedTx(item);
+          setModalType("detail");
+        }}
+        style={({ pressed }) => [styles.row, pressed && { opacity: 0.7 }]}
+      >
+        <View style={styles.iconContainer}>
+          <Ionicons
+            name={isExpense ? "arrow-down" : "arrow-up"}
+            size={20}
+            color={isExpense ? "#C93545" : "#21A179"}
+          />
         </View>
 
-        {transactions.length === 0 ? (
-          <Text style={styles.emptyText}>Aún no hay transacciones</Text>
-        ) : (
-          <FlatList
-            data={transactions}
-            keyExtractor={(item) => item.id}
-            scrollEnabled={false}
-            renderItem={({ item }) => {
-              const formattedAmount =
-                item.type === "expense"
-                  ? `- ${item.amount}`
-                  : `+ ${item.amount}`;
+        <View style={{ flex: 1 }}>
+          <Text style={styles.txTitle}>{item.category}</Text>
+          <Text style={styles.txSubtitle}>
+            {isExpense ? "Gasto" : "Ingreso"}
+          </Text>
+        </View>
 
-              return (
-                <Pressable
-                  onPress={() => {
-                    setSelectedTx(item);
-                    setModalType("detail");
-                  }}
-                  style={({ pressed }) => [
-                    styles.row,
-                    pressed && { opacity: 0.9 },
-                  ]}
-                >
-                  <View style={styles.icon} />
+        <Text
+          style={[styles.amount, isExpense ? styles.negative : styles.positive]}
+        >
+          {isExpense ? `- $${item.amount}` : `+ $${item.amount}`}
+        </Text>
+      </Pressable>
+    );
+  };
 
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.txTitle}>{item.category}</Text>
-                    <Text style={styles.txSubtitle}>
-                      {item.type === "income" ? "Ingreso" : "Gasto"}
-                    </Text>
-                  </View>
-
-                  <Text
-                    style={[
-                      styles.amount,
-                      item.type === "expense"
-                        ? styles.negative
-                        : styles.positive,
-                    ]}
-                  >
-                    {formattedAmount}
-                  </Text>
-                </Pressable>
-              );
-            }}
-          />
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#FFF" }}>
+      <FlatList
+        data={transactions}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        ListHeaderComponent={() => (
+          <View style={styles.header}>
+            <Text style={styles.title}>Todas las transacciones</Text>
+          </View>
         )}
-      </View>
+        ListEmptyComponent={() => (
+          <Text style={styles.emptyText}>Aún no hay transacciones</Text>
+        )}
+        contentContainerStyle={styles.listContent}
+      />
+
       {modalType === "detail" && (
         <CustomModal
           visible
           title={selectedTx?.category ?? ""}
-          message={`Tipo: ${selectedTx?.type}\nMonto: ${selectedTx?.amount}`}
+          message={`Tipo: ${selectedTx?.type}\nMonto: $${selectedTx?.amount}`}
           confirmText="Eliminar"
           cancelText="Cerrar"
           onCancel={closeAllModal}
           onConfirm={handleOpenConfirm}
         />
       )}
-
       {modalType === "confirm" && (
         <CustomModal
           visible
@@ -154,10 +149,8 @@ export default function Transactions() {
           onConfirm={handleDeleteConfirmed}
         />
       )}
-
       {modalType === "success" && (
         <CustomModal
-          key={modalType}
           visible
           title="Transacción eliminada"
           message="La transacción fue eliminada con éxito."
@@ -170,46 +163,47 @@ export default function Transactions() {
 }
 
 const styles = StyleSheet.create({
-  container: { marginTop: 12, padding: 15 },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 10,
   },
-  title: { fontSize: 16, color: TEXT, fontWeight: "600" },
-  viewAll: { color: "#3669C9", fontWeight: "600" },
-
+  listContent: {
+    paddingHorizontal: 15,
+    paddingBottom: 130,
+  },
+  title: { fontSize: 18, color: TEXT, fontWeight: "700" },
   row: {
-    marginTop: 12,
     backgroundColor: CARD,
-    borderRadius: 12,
-    padding: 12,
+    borderRadius: 16,
+    padding: 14,
     flexDirection: "row",
     alignItems: "center",
+    marginBottom: 12,
     shadowColor: "#000",
-    shadowOpacity: 0.03,
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 8,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: "red",
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 3,
   },
-  icon: {
+  iconContainer: {
     width: 44,
     height: 44,
-    borderRadius: 10,
+    borderRadius: 12,
     backgroundColor: "#F4F7FF",
     marginRight: 12,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  txTitle: { fontSize: 14, color: TEXT, fontWeight: "600" },
+  txTitle: { fontSize: 15, color: TEXT, fontWeight: "600" },
   txSubtitle: { fontSize: 12, color: MUTED, marginTop: 2 },
-  amount: { fontWeight: "700" },
+  amount: { fontSize: 16, fontWeight: "700" },
   negative: { color: "#C93545" },
   positive: { color: "#21A179" },
   emptyText: {
     textAlign: "center",
-    marginTop: 20,
+    marginTop: 40,
     color: MUTED,
+    fontSize: 14,
   },
 });

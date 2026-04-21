@@ -1,4 +1,5 @@
 import CardBalance from "@/components/cards/CardBalance";
+import QuickCategories from "@/components/categories/QuickCategories";
 import Header from "@/components/header/Header";
 import RecentTransactions from "@/components/transactions/RecentTransactions";
 import { BACKGROUND } from "@/constants/theme2";
@@ -15,8 +16,7 @@ export default function HomeScreen() {
       >
         <Header />
         <CardBalance />
-        {/* <CardTransaction /> */}
-
+        <QuickCategories />
         <RecentTransactions />
       </ScrollView>
       <StatusBar style="dark" />

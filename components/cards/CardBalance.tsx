@@ -1,55 +1,29 @@
-import { db } from "@/api/firebase";
-import { PRIMARY, SUCCESS } from "@/constants/theme2";
-import { useAuth } from "@/context/AuthContext";
-import { collection, onSnapshot, query } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Period, useBalanceByPeriod } from "@/hooks/useBalanceByPeriod";
+import Ionicons from "@expo/vector-icons/Ionicons";
+
+import { LinearGradient } from "expo-linear-gradient";
+import React from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+
+const SELECTERS = [
+  { label: "Semana", value: "week" as Period },
+  { label: "Mes", value: "month" as Period },
+  { label: "Año", value: "year" as Period },
+];
 
 const CardBalance = () => {
-  const { user } = useAuth();
-  const [totalBalance, setTotalBalance] = useState(0);
-  const [monthlyIncome, setMonthlyIncome] = useState(0);
-  const [monthlyExpense, setMonthlyExpense] = useState(0);
-
-  useEffect(() => {
-    if (!user) return;
-
-    const q = query(collection(db, "users", user.uid, "transactions"));
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const now = new Date();
-      const currentMonth = now.getMonth();
-      const currentYear = now.getFullYear();
-
-      let balance = 0;
-      let income = 0;
-      let expense = 0;
-
-      snapshot.docs.forEach((doc) => {
-        const data = doc.data();
-        const amount = data.amount ?? 0;
-        const isIncome = data.type === "income";
-
-        balance += isIncome ? amount : -amount;
-
-        const createdAt = data.createdAt?.toDate?.();
-        if (
-          createdAt &&
-          createdAt.getMonth() === currentMonth &&
-          createdAt.getFullYear() === currentYear
-        ) {
-          if (isIncome) income += amount;
-          else expense += amount;
-        }
-      });
-
-      setTotalBalance(balance);
-      setMonthlyIncome(income);
-      setMonthlyExpense(expense);
-    });
-
-    return () => unsubscribe();
-  }, [user]);
+  const {
+    period,
+    income,
+    expense,
+    balance,
+    periodLabel,
+    statLabel,
+    handlePeriod,
+    goBack,
+    goForward,
+    isCurrentPeriod,
+  } = useBalanceByPeriod();
 
   const formatCurrency = (value: number) =>
     value.toLocaleString("es-CO", {
@@ -59,34 +33,99 @@ const CardBalance = () => {
     });
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.label}>Balance Total</Text>
-      <Text style={styles.balance}>{formatCurrency(totalBalance)}</Text>
+    <LinearGradient
+      colors={["#1E1F8E", "#3B3DBF", "#6B6FE0"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.card}
+    >
+      <View style={styles.selectersRow}>
+        {SELECTERS.map((selecter) => (
+          <TouchableOpacity
+            key={selecter.value}
+            style={[
+              styles.selecter,
+              period === selecter.value && styles.selecterActive,
+            ]}
+            onPress={() => handlePeriod(selecter.value)}
+          >
+            <Text
+              style={[
+                styles.selecterText,
+                period === selecter.value && styles.selecterTextActive,
+              ]}
+            >
+              {selecter.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
+      <View style={styles.navRow}>
+        <TouchableOpacity style={styles.navButton} onPress={goBack}>
+          <Ionicons
+            name="chevron-back"
+            size={20}
+            color="rgba(255,255,255,0.8)"
+          />
+        </TouchableOpacity>
+
+        <Text style={styles.label}>{periodLabel}</Text>
+
+        <TouchableOpacity
+          style={styles.navButton}
+          onPress={goForward}
+          disabled={isCurrentPeriod}
+        >
+          <Ionicons
+            name="chevron-forward"
+            size={20}
+            color={
+              isCurrentPeriod
+                ? "rgba(255,255,255,0.25)"
+                : "rgba(255,255,255,0.8)"
+            }
+          />
+        </TouchableOpacity>
+      </View>
+
+      <Text style={styles.balance}>{formatCurrency(balance)}</Text>
       <View style={styles.divider} />
 
       <View style={styles.row}>
         <View style={styles.stat}>
-          <View style={[styles.dot, { backgroundColor: SUCCESS }]} />
-          <View>
-            <Text style={styles.statLabel}>Ingresos del mes</Text>
-            <Text style={[styles.statAmount, { color: SUCCESS }]}>
-              + {formatCurrency(monthlyIncome)}
+          <View
+            style={[styles.dot, { backgroundColor: "rgba(46,213,115,0.2)" }]}
+          >
+            <Ionicons name="arrow-up-circle" size={22} color="#4AE588" />
+          </View>
+          <View style={styles.statInfo}>
+            <Text style={styles.statLabel} numberOfLines={2}>
+              Ingresos {statLabel}
+            </Text>
+            <Text style={[styles.statAmount, { color: "#4AE588" }]}>
+              {formatCurrency(income)}
             </Text>
           </View>
         </View>
 
         <View style={styles.stat}>
-          <View style={[styles.dot, { backgroundColor: "#C93545" }]} />
-          <View>
-            <Text style={styles.statLabel}>Gastos del mes</Text>
-            <Text style={[styles.statAmount, { color: "#C93545" }]}>
-              - {formatCurrency(monthlyExpense)}
+          <View
+            style={[styles.dot, { backgroundColor: "rgba(255,107,118,0.2)" }]}
+          >
+            <Ionicons name="arrow-down-circle" size={22} color="#FF6B76" />
+          </View>
+          <View style={styles.statInfo}>
+            <Text style={styles.statLabel} numberOfLines={2}>
+              Gastos {statLabel}
+            </Text>
+            <Text style={[styles.statAmount, { color: "#FF6B76" }]}>
+              {formatCurrency(expense)}
             </Text>
           </View>
         </View>
       </View>
-    </View>
+    </LinearGradient>
   );
 };
 
@@ -94,20 +133,60 @@ export default CardBalance;
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: PRIMARY,
-    padding: 24,
+    padding: 20,
     borderRadius: 20,
     marginBottom: 10,
-    shadowColor: PRIMARY,
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 6,
+    shadowColor: "#1E1F8E",
+    shadowOpacity: 0.45,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 10,
+  },
+  selectersRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 6,
+    marginBottom: 12,
+  },
+  selecter: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: "rgba(255,255,255,0.3)",
+  },
+  selecterActive: {
+    backgroundColor: "rgba(255,255,255,0.2)",
+    borderColor: "rgba(255,255,255,0.7)",
+  },
+  selecterText: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "rgba(255,255,255,0.5)",
+  },
+  selecterTextActive: {
+    color: "#FFFFFF",
+  },
+  navRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 8,
+  },
+  navButton: {
+    padding: 2,
+  },
+  navArrow: {
+    fontSize: 20,
+    color: "rgba(255,255,255,0.8)",
+    lineHeight: 22,
+  },
+  navArrowDisabled: {
+    color: "rgba(255,255,255,0.25)",
   },
   label: {
     fontSize: 13,
-    color: "rgba(255,255,255,0.7)",
-    marginBottom: 6,
+    color: "rgba(255,255,255,0.75)",
     fontWeight: "500",
   },
   balance: {
@@ -115,6 +194,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#FFFFFF",
     marginBottom: 20,
+    marginTop: 4,
   },
   divider: {
     height: 1,
@@ -128,22 +208,29 @@ const styles = StyleSheet.create({
   stat: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    gap: 8,
+    flex: 1,
   },
+  statInfo: { flex: 1 },
   dot: {
-    width: 36,
+    width: 40,
     height: 36,
     borderRadius: 10,
-    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dotIcon: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "700",
   },
   statLabel: {
     fontSize: 12,
     color: "rgba(255,255,255,0.7)",
-    marginBottom: 2,
+    padding: 3,
   },
   statAmount: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#FFFFFF",
   },
 });

@@ -1,5 +1,5 @@
 import { useTransactions } from "@/context/TransactionsContext";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   Switch,
@@ -22,9 +22,14 @@ const DEFAULT_CATEGORIES: CategoryItem[] = [
 
 type Props = {
   onSubmit: VoidFunction;
+  defaultCategory?: string;
+  defaultType?: "income" | "expense";
 };
 
-export default function CardTransaction({ onSubmit }: Props) {
+export default function CardTransaction({
+  defaultCategory,
+  defaultType,
+}: Props) {
   const { addCategory, categories, addTransaction } = useTransactions();
 
   const [isIncome, setIsIncome] = useState(true);
@@ -33,12 +38,30 @@ export default function CardTransaction({ onSubmit }: Props) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [openModal, setOpenModal] = useState(false);
 
+  useEffect(() => {
+    if (defaultCategory) setSelectedCategory(defaultCategory);
+  }, [defaultCategory]);
+
+  useEffect(() => {
+    if (defaultType) setIsIncome(defaultType === "income");
+  }, [defaultType]);
+
   const dropdownCategories: CategoryItem[] = [
     ...DEFAULT_CATEGORIES,
     ...categories
       .filter((c) => c.name !== "General")
       .map((c) => ({ label: c.name, value: c.name })),
   ];
+
+  if (
+    defaultCategory &&
+    !dropdownCategories.some((c) => c.value === defaultCategory)
+  ) {
+    dropdownCategories.unshift({
+      label: defaultCategory,
+      value: defaultCategory,
+    });
+  }
 
   const handleCreateCategory = async () => {
     if (!newCategory.trim()) return;
@@ -49,6 +72,15 @@ export default function CardTransaction({ onSubmit }: Props) {
 
   const handleAdd = async () => {
     if (!amount || isNaN(Number(amount)) || !selectedCategory) return;
+
+    const exists = categories.some(
+      (c) =>
+        c.name.toLocaleLowerCase() === selectedCategory.toLocaleLowerCase(),
+    );
+    if (!exists) {
+      await addCategory(selectedCategory);
+    }
+
     await addTransaction({
       type: isIncome ? "income" : "expense",
       amount: Number(amount),
