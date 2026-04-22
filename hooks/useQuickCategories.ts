@@ -1,4 +1,3 @@
-// hooks/useQuickCategories.ts
 import { useState } from "react";
 
 export type QuickCategory = {
@@ -8,26 +7,27 @@ export type QuickCategory = {
 };
 
 export const ALL_CATEGORIES: QuickCategory[] = [
-  { label: "Alimentación", icon: "🍔", type: "expense" },
-  { label: "Transporte", icon: "🚌", type: "expense" },
-  { label: "Salud", icon: "💊", type: "expense" },
-  { label: "Arriendo", icon: "🏠", type: "expense" },
-  { label: "Servicios", icon: "💡", type: "expense" },
-  { label: "Educación", icon: "📚", type: "expense" },
-  { label: "Ropa", icon: "👕", type: "expense" },
-  { label: "Entretenimiento", icon: "🎬", type: "expense" },
-  { label: "Restaurantes", icon: "🍽️", type: "expense" },
-  { label: "Gimnasio", icon: "🏋️", type: "expense" },
-  { label: "Mascotas", icon: "🐾", type: "expense" },
-  { label: "Deudas", icon: "💳", type: "expense" },
-  { label: "Internet", icon: "📶", type: "expense" },
-  { label: "Celular", icon: "📱", type: "expense" },
-  { label: "Salario", icon: "💰", type: "income" },
-  { label: "Freelance", icon: "💻", type: "income" },
-  { label: "Negocio", icon: "🏪", type: "income" },
-  { label: "Inversión", icon: "📈", type: "income" },
-  { label: "Alquiler", icon: "🏘️", type: "income" },
-  { label: "Regalo", icon: "🎁", type: "income" },
+  { label: "Alimentación", icon: "food", type: "expense" },
+  { label: "Transporte", icon: "bus", type: "expense" },
+  { label: "Salud", icon: "medical-bag", type: "expense" },
+  { label: "Arriendo", icon: "home", type: "expense" },
+  { label: "Servicios", icon: "lightning-bolt", type: "expense" },
+  { label: "Educación", icon: "school", type: "expense" },
+  { label: "Ropa", icon: "tshirt-crew", type: "expense" },
+  { label: "Entretenimiento", icon: "movie-open", type: "expense" },
+  { label: "Restaurantes", icon: "silverware-fork-knife", type: "expense" },
+  { label: "Gimnasio", icon: "dumbbell", type: "expense" },
+  { label: "Mascotas", icon: "paw", type: "expense" },
+  { label: "Deudas", icon: "credit-card", type: "expense" },
+  { label: "Internet", icon: "wifi", type: "expense" },
+  { label: "Celular", icon: "cellphone", type: "expense" },
+  // Ingresos
+  { label: "Salario", icon: "cash", type: "income" },
+  { label: "Freelance", icon: "laptop", type: "income" },
+  { label: "Negocio", icon: "store", type: "income" },
+  { label: "Inversión", icon: "chart-line", type: "income" },
+  { label: "Alquiler", icon: "home-city", type: "income" },
+  { label: "Regalo", icon: "gift", type: "income" },
 ];
 
 export const VISIBLE_COUNT = 7;

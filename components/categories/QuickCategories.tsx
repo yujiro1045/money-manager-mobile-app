@@ -1,4 +1,5 @@
 import { ALL_CATEGORIES, useQuickCategories } from "@/hooks/useQuickCategories";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import {
   FlatList,
   Modal,
@@ -38,7 +39,11 @@ const QuickCategories = () => {
           { backgroundColor: cat.type === "expense" ? "#FFF0F0" : "#F0FFF4" },
         ]}
       >
-        <Text style={styles.icon}>{cat.icon}</Text>
+        <MaterialCommunityIcons
+          name={cat.icon as any}
+          size={26}
+          color={cat.type === "expense" ? "#E53935" : "#2E7D32"}
+        />
       </View>
       <Text style={styles.itemLabel} numberOfLines={1}>
         {cat.label}
@@ -61,7 +66,11 @@ const QuickCategories = () => {
             .map((cat, i) => renderCategory(cat, i + 4))}
           <TouchableOpacity style={styles.item} onPress={openAll}>
             <View style={[styles.iconBox, { backgroundColor: "#F3F4F6" }]}>
-              <Text style={styles.seeAllIcon}>...</Text>
+              <MaterialCommunityIcons
+                name="dots-horizontal"
+                size={26}
+                color="#6B7280"
+              />
             </View>
             <Text style={styles.itemLabel}>Ver todo</Text>
           </TouchableOpacity>

@@ -10,7 +10,9 @@ import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Text } from "@react-navigation/elements";
 import React, { useState } from "react";
 import {
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -98,9 +100,17 @@ const CustomNavBar: React.FC<BottomTabBarProps> = ({ state, navigation }) => {
             style={styles.backdrop}
             onPress={() => setShowSheet(false)}
           />
+
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "android" ? "padding" : "height"}
+            style={{ width: "100%" }}
+          />
           <View style={styles.sheet}>
             <View style={styles.sheetHandle} />
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
               <CardTransaction
                 onSubmit={() => {
                   setShowSheet(false);
