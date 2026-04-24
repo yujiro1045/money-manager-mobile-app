@@ -39,6 +39,9 @@ export default function DashboardScreen() {
     healthScore,
     remainingBudget,
     balanceLine,
+    selectedCategory,
+    allCategories,
+    setSelectedCategory,
   } = useDashboard();
 
   const barData = last6.flatMap((m) => [
@@ -204,27 +207,77 @@ export default function DashboardScreen() {
                 innerCircleColor="#FFFFFF"
                 centerLabelComponent={() => (
                   <View style={styles.pieCenter}>
-                    <Text style={styles.pieCenterLabel}>Gastos</Text>
+                    <Text style={styles.pieCenterLabel}>
+                      {selectedCategory ?? "Gastos"}
+                    </Text>
                     <Text style={styles.pieCenterValue}>
-                      {formatCurrency(current.expense)}
+                      {formatCurrency(
+                        selectedCategory
+                          ? (allCategories.find(
+                              (c) => c.label === selectedCategory,
+                            )?.value ?? 0)
+                          : current.expense,
+                      )}
                     </Text>
                   </View>
                 )}
               />
+
               <View style={styles.pieLegend}>
-                {categoryDistribution.map((cat, i) => (
-                  <View key={i} style={styles.pieLegendItem}>
-                    <View
-                      style={[styles.legendDot, { backgroundColor: cat.color }]}
-                    />
-                    <Text style={styles.pieLegendLabel} numberOfLines={1}>
-                      {cat.label}
-                    </Text>
-                    <Text style={styles.pieLegendPct}>{cat.text}</Text>
-                  </View>
-                ))}
+                {allCategories.map((cat, i) => {
+                  const isSelected = selectedCategory === cat.label;
+                  const isFiltered = selectedCategory && !isSelected;
+                  return (
+                    <TouchableOpacity
+                      key={i}
+                      style={[
+                        styles.pieLegendItem,
+                        isSelected && styles.pieLegendItemSelected,
+                      ]}
+                      onPress={() =>
+                        setSelectedCategory(isSelected ? null : cat.label)
+                      }
+                    >
+                      <View
+                        style={[
+                          styles.legendDot,
+                          {
+                            backgroundColor: cat.color,
+                            opacity: isFiltered ? 0.3 : 1,
+                          },
+                        ]}
+                      />
+                      <Text
+                        style={[
+                          styles.pieLegendLabel,
+                          { opacity: isFiltered ? 0.3 : 1 },
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {cat.label}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.pieLegendPct,
+                          { opacity: isFiltered ? 0.3 : 1 },
+                        ]}
+                      >
+                        {cat.text}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
             </View>
+
+            {selectedCategory && (
+              <TouchableOpacity
+                style={styles.clearButton}
+                onPress={() => setSelectedCategory(null)}
+              >
+                <Text style={styles.clearButtonText}>Ver todas</Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
       </ScrollView>
@@ -398,6 +451,10 @@ const styles = StyleSheet.create({
   },
   pieCenter: {
     alignItems: "center",
+    width: 90,
+    paddingHorizontal: 2,
+    //borderWidth: 1,
+    //borderColor: "red",
   },
   pieCenterLabel: {
     fontSize: 11,
@@ -426,5 +483,23 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "700",
     color: MUTED,
+  },
+  pieLegendItemSelected: {
+    backgroundColor: "#F0F0FF",
+    borderRadius: 8,
+    paddingHorizontal: 4,
+  },
+  clearButton: {
+    alignSelf: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: "#F0F0FF",
+    marginTop: 4,
+  },
+  clearButtonText: {
+    fontSize: 12,
+    color: PRIMARY,
+    fontWeight: "600",
   },
 });

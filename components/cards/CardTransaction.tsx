@@ -29,6 +29,7 @@ type Props = {
 export default function CardTransaction({
   defaultCategory,
   defaultType,
+  onSubmit,
 }: Props) {
   const { addCategory, categories, addTransaction } = useTransactions();
 
@@ -151,7 +152,10 @@ export default function CardTransaction({
         title="¡Transacción añadida!"
         message="Tu transacción se registró correctamente."
         confirmText="Aceptar"
-        onConfirm={() => setOpenModal(false)}
+        onConfirm={() => {
+          setOpenModal(false);
+          onSubmit();
+        }}
       />
     </>
   );

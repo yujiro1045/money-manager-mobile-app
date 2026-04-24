@@ -18,7 +18,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import CustomModal from "../ui/CustomModal";
 import NavBarNotch, {
   BAR_HEIGHT,
   BAR_WIDTH,
@@ -27,7 +26,7 @@ import NavBarNotch, {
 
 const CustomNavBar: React.FC<BottomTabBarProps> = ({ state, navigation }) => {
   const [showSheet, setShowSheet] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
+  //const [showSuccess, setShowSuccess] = useState(false);
 
   const routes = state.routes;
   const mid = Math.floor(routes.length / 2);
@@ -95,16 +94,14 @@ const CustomNavBar: React.FC<BottomTabBarProps> = ({ state, navigation }) => {
         transparent
         statusBarTranslucent
       >
-        <View style={styles.overlay}>
-          <TouchableOpacity
-            style={styles.backdrop}
-            onPress={() => setShowSheet(false)}
-          />
-
-          <KeyboardAvoidingView
-            behavior={Platform.OS === "android" ? "padding" : "height"}
-            style={{ width: "100%" }}
-          />
+        <TouchableOpacity
+          style={styles.backdrop}
+          onPress={() => setShowSheet(false)}
+        />
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.keyboardView}
+        >
           <View style={styles.sheet}>
             <View style={styles.sheetHandle} />
             <ScrollView
@@ -114,21 +111,20 @@ const CustomNavBar: React.FC<BottomTabBarProps> = ({ state, navigation }) => {
               <CardTransaction
                 onSubmit={() => {
                   setShowSheet(false);
-                  setTimeout(() => setShowSuccess(true), 300);
                 }}
               />
             </ScrollView>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
-      <CustomModal
+      {/*  <CustomModal
         visible={showSuccess}
         title="¡Transacción añadida!"
         message="Tu transacción se registró correctamente."
         confirmText="Aceptar"
         onConfirm={() => setShowSuccess(false)}
-      />
+      /> */}
     </>
   );
 
@@ -219,6 +215,10 @@ const styles = StyleSheet.create({
   },
 
   overlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+  },
+  keyboardView: {
     flex: 1,
     justifyContent: "flex-end",
   },

@@ -36,7 +36,6 @@ export const useQuickCategories = () => {
   const [selectedCat, setSelectedCat] = useState<QuickCategory | null>(null);
   const [showSheet, setShowSheet] = useState(false);
   const [showAll, setShowAll] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
 
   const handlePress = (cat: QuickCategory) => {
     setSelectedCat(cat);
@@ -46,14 +45,12 @@ export const useQuickCategories = () => {
 
   const handleSubmit = () => {
     setShowSheet(false);
-    setTimeout(() => setShowSuccess(true), 300);
   };
 
   return {
     selectedCat,
     showSheet,
     showAll,
-    showSuccess,
     visibleCategories: ALL_CATEGORIES.slice(0, VISIBLE_COUNT),
     allCategories: ALL_CATEGORIES,
     handlePress,
@@ -61,6 +58,5 @@ export const useQuickCategories = () => {
     openAll: () => setShowAll(true),
     closeAll: () => setShowAll(false),
     closeSheet: () => setShowSheet(false),
-    closeSuccess: () => setShowSuccess(false),
   };
 };

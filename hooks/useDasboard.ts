@@ -10,8 +10,8 @@ export type DashboardPeriod = "week" | "month" | "year";
 export const useDashboard = () => {
   const { transactions } = useTransactions();
   const [period, setPeriod] = useState<DashboardPeriod>("month");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  // --- Últimos 6 periodos para barras ---
   const last6 = useMemo(() => {
     return Array.from({ length: 6 }, (_, i) => {
       const unit =
@@ -43,11 +43,27 @@ export const useDashboard = () => {
     });
   }, [transactions, period]);
 
-  // --- Periodo actual ---
-  const current = last6[last6.length - 1];
+  const current = useMemo(() => {
+    const unit =
+      period === "week" ? "week" : period === "month" ? "month" : "year";
+    const start = dayjs().startOf(unit);
+    const end = dayjs().endOf(unit);
 
-  // --- Distribución por categoría (periodo actual) ---
-  const categoryDistribution = useMemo(() => {
+    let income = 0;
+    let expense = 0;
+
+    transactions.forEach((tx) => {
+      const date = dayjs(tx.createdAt?.toDate?.() ?? tx.createdAt);
+      if (date.isAfter(start) && date.isBefore(end)) {
+        if (tx.type === "income") income += tx.amount;
+        else expense += tx.amount;
+      }
+    });
+
+    return { income, expense, balance: income - expense };
+  }, [transactions, period]);
+
+  const allCategories = useMemo(() => {
     const unit =
       period === "week" ? "week" : period === "month" ? "month" : "year";
     const start = dayjs().startOf(unit);
@@ -84,7 +100,11 @@ export const useDashboard = () => {
       }));
   }, [transactions, period, current.expense]);
 
-  // --- Score de salud financiera ---
+  const categoryDistribution = useMemo(() => {
+    if (!selectedCategory) return allCategories;
+    return allCategories.filter((cat) => cat.label === selectedCategory);
+  }, [allCategories, selectedCategory]);
+
   const healthScore = useMemo(() => {
     if (current.income === 0)
       return { score: 0, status: "Sin datos", color: "#9CA3AF" };
@@ -100,27 +120,36 @@ export const useDashboard = () => {
     return { score: 0, status: "Crítico 🔴", color: "#E53935" };
   }, [current]);
 
-  // --- Presupuesto restante ---
   const remainingBudget = useMemo(() => {
     const avgIncome = last6.reduce((acc, m) => acc + m.income, 0) / 6;
     return avgIncome - current.expense;
   }, [last6, current]);
 
-  // --- Línea de balance (últimos 6) ---
-  const balanceLine = last6.map((m, i) => ({
-    value: m.balance,
+  const balanceLine = last6.map((m) => ({
+    value: Math.abs(m.balance),
     label: m.label,
     dataPointText: "",
+    dataPointColor: m.balance >= 0 ? "#6B6FE0" : "#FF6B76",
+    color: m.balance >= 0 ? "#6B6FE0" : "#FF6B76",
   }));
+
+  // Resetear categoría seleccionada al cambiar periodo
+  const handleSetPeriod = (p: DashboardPeriod) => {
+    setPeriod(p);
+    setSelectedCategory(null);
+  };
 
   return {
     period,
-    setPeriod,
+    setPeriod: handleSetPeriod,
     last6,
     current,
+    allCategories,
     categoryDistribution,
     healthScore,
     remainingBudget,
     balanceLine,
+    selectedCategory,
+    setSelectedCategory,
   };
 };

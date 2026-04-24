@@ -1,20 +1,16 @@
 import CustomModal from "@/components/ui/CustomModal";
-import { CARD, MUTED, TEXT } from "@/constants/theme2";
-import { useEffect, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-
-import { db } from "@/api/firebase";
-import { useAuth } from "@/context/AuthContext";
+import { BACKGROUND, CARD, MUTED, PRIMARY, TEXT } from "@/constants/theme2";
+import { TYPE_FILTERS, useTransactionList } from "@/hooks/useTrasactionList";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import {
-  collection,
-  deleteDoc,
-  doc,
-  onSnapshot,
-  orderBy,
-  query,
-} from "firebase/firestore";
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type Transaction = {
   id: string;
@@ -24,66 +20,26 @@ type Transaction = {
 };
 
 export default function Transactions() {
-  const { user } = useAuth();
-
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
-
-  const [modalType, setModalType] = useState<
-    "detail" | "confirm" | "success" | null
-  >(null);
-
-  useEffect(() => {
-    console.log("useEffect user:", user?.uid);
-    if (!user) return;
-    const q = query(
-      collection(db, "users", user.uid, "transactions"),
-      orderBy("createdAt", "desc"),
-    );
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      console.log("snapshot docs:", snapshot.docs.length);
-      const data: Transaction[] = snapshot.docs.map((docItem) => ({
-        id: docItem.id,
-        ...docItem.data(),
-      })) as Transaction[];
-
-      setTransactions(data);
-    });
-
-    return () => unsubscribe();
-  }, [user]);
-
-  const closeAllModal = () => {
-    setModalType(null);
-  };
-
-  const handleDeleteConfirmed = async () => {
-    if (!selectedTx || !user) return;
-    try {
-      await deleteDoc(
-        doc(db, "users", user.uid, "transactions", selectedTx.id),
-      );
-      setModalType(null);
-      setSelectedTx(null);
-      setTimeout(() => setModalType("success"), 200);
-    } catch (error) {
-      console.error("Error eliminando:", error);
-    }
-  };
-
-  const handleOpenConfirm = () => {
-    setModalType("confirm");
-  };
+  const {
+    filteredTransactions,
+    selectedTx,
+    modalType,
+    filterType,
+    sortOrder,
+    setFilterType,
+    toggleSortOrder,
+    handlePressTx,
+    closeAllModal,
+    handleDeleteConfirmed,
+    openConfirm,
+    closeSuccess,
+  } = useTransactionList();
 
   const renderItem = ({ item }: { item: Transaction }) => {
     const isExpense = item.type === "expense";
     return (
       <Pressable
-        onPress={() => {
-          setSelectedTx(item);
-          setModalType("detail");
-        }}
+        onPress={() => handlePressTx(item)}
         style={({ pressed }) => [styles.row, pressed && { opacity: 0.7 }]}
       >
         <View style={styles.iconContainer}>
@@ -93,32 +49,70 @@ export default function Transactions() {
             color={isExpense ? "#C93545" : "#21A179"}
           />
         </View>
-
         <View style={{ flex: 1 }}>
           <Text style={styles.txTitle}>{item.category}</Text>
           <Text style={styles.txSubtitle}>
             {isExpense ? "Gasto" : "Ingreso"}
           </Text>
         </View>
-
         <Text
           style={[styles.amount, isExpense ? styles.negative : styles.positive]}
         >
-          {isExpense ? `- $${item.amount}` : `+ $${item.amount}`}
+          {isExpense
+            ? `- $${item.amount.toLocaleString("es-CO")}`
+            : `+ $${item.amount.toLocaleString("es-CO")}`}
         </Text>
       </Pressable>
     );
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#FFF" }}>
+    <SafeAreaView style={styles.safe}>
       <FlatList
-        data={transactions}
+        data={filteredTransactions}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         ListHeaderComponent={() => (
-          <View style={styles.header}>
-            <Text style={styles.title}>Todas las transacciones</Text>
+          <View>
+            <View style={styles.header}>
+              <Text style={styles.title}>Transacciones</Text>
+            </View>
+
+            <View style={styles.filterRow}>
+              {TYPE_FILTERS.map((f) => (
+                <TouchableOpacity
+                  key={f.value}
+                  style={[
+                    styles.filterPill,
+                    filterType === f.value && styles.filterPillActive,
+                  ]}
+                  onPress={() => setFilterType(f.value)}
+                >
+                  <Text
+                    style={[
+                      styles.filterPillText,
+                      filterType === f.value && styles.filterPillTextActive,
+                    ]}
+                  >
+                    {f.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <TouchableOpacity
+              style={styles.sortButton}
+              onPress={toggleSortOrder}
+            >
+              <Ionicons
+                name={sortOrder === "desc" ? "arrow-down" : "arrow-up"}
+                size={14}
+                color={PRIMARY}
+              />
+              <Text style={styles.sortButtonText}>
+                {sortOrder === "desc" ? "Mayor a menor" : "Menor a mayor"}
+              </Text>
+            </TouchableOpacity>
           </View>
         )}
         ListEmptyComponent={() => (
@@ -131,11 +125,11 @@ export default function Transactions() {
         <CustomModal
           visible
           title={selectedTx?.category ?? ""}
-          message={`Tipo: ${selectedTx?.type}\nMonto: $${selectedTx?.amount}`}
+          message={`Tipo: ${selectedTx?.type}\nMonto: $${selectedTx?.amount.toLocaleString("es-CO")}`}
           confirmText="Eliminar"
           cancelText="Cerrar"
           onCancel={closeAllModal}
-          onConfirm={handleOpenConfirm}
+          onConfirm={openConfirm}
         />
       )}
       {modalType === "confirm" && (
@@ -155,7 +149,7 @@ export default function Transactions() {
           title="Transacción eliminada"
           message="La transacción fue eliminada con éxito."
           confirmText="Ok"
-          onConfirm={() => setModalType(null)}
+          onConfirm={closeSuccess}
         />
       )}
     </SafeAreaView>
@@ -163,16 +157,67 @@ export default function Transactions() {
 }
 
 const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    backgroundColor: BACKGROUND,
+  },
   header: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 4,
     paddingTop: 20,
-    paddingBottom: 10,
+    paddingBottom: 12,
   },
   listContent: {
-    paddingHorizontal: 15,
+    paddingHorizontal: 16,
     paddingBottom: 130,
   },
-  title: { fontSize: 18, color: TEXT, fontWeight: "700" },
+  title: {
+    fontSize: 22,
+    color: TEXT,
+    fontWeight: "700",
+  },
+  filterRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 10,
+  },
+  filterPill: {
+    paddingHorizontal: 16,
+    paddingVertical: 7,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: "#D1D5DB",
+    backgroundColor: "#FFFFFF",
+  },
+  filterPillActive: {
+    backgroundColor: PRIMARY,
+    borderColor: PRIMARY,
+  },
+  filterPillText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: MUTED,
+  },
+  filterPillTextActive: {
+    color: "#FFFFFF",
+  },
+  sortButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    alignSelf: "flex-end",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1.5,
+    borderColor: "#D1D5DB",
+    marginBottom: 12,
+  },
+  sortButtonText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: PRIMARY,
+  },
   row: {
     backgroundColor: CARD,
     borderRadius: 16,
@@ -195,9 +240,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  txTitle: { fontSize: 15, color: TEXT, fontWeight: "600" },
-  txSubtitle: { fontSize: 12, color: MUTED, marginTop: 2 },
-  amount: { fontSize: 16, fontWeight: "700" },
+  txTitle: {
+    fontSize: 15,
+    color: TEXT,
+    fontWeight: "600",
+  },
+  txSubtitle: {
+    fontSize: 12,
+    color: MUTED,
+    marginTop: 2,
+  },
+  amount: {
+    fontSize: 16,
+    fontWeight: "700",
+  },
   negative: { color: "#C93545" },
   positive: { color: "#21A179" },
   emptyText: {

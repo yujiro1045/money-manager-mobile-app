@@ -10,20 +10,17 @@ import {
   View,
 } from "react-native";
 import CardTransaction from "../cards/CardTransaction";
-import CustomModal from "../ui/CustomModal";
 
 const QuickCategories = () => {
   const {
     closeAll,
     closeSheet,
-    closeSuccess,
     handlePress,
     handleSubmit,
     openAll,
     selectedCat,
     showAll,
     showSheet,
-    showSuccess,
     visibleCategories,
   } = useQuickCategories();
 
@@ -122,13 +119,13 @@ const QuickCategories = () => {
         </View>
       </Modal>
 
-      <CustomModal
+      {/* <CustomModal
         visible={showSuccess}
         title="¡Transacción añadida!"
         message="Tu transacción se registró correctamente."
         confirmText="Aceptar"
         onConfirm={closeSuccess}
-      />
+      /> */}
     </>
   );
 };
