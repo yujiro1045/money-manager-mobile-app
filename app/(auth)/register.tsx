@@ -1,5 +1,6 @@
 import { registerUser } from "@/api/auth";
 import { RegisterIcon } from "@/components/ui/icons/icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { Link } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -11,6 +12,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from "react-native";
 
@@ -18,17 +20,25 @@ export default function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleRegister = async () => {
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !confirmPassword) {
       setError("Todos los campos son obligatorios");
       return;
     }
 
     if (password.length < 6) {
       setError("La contraseña debe tener al menos 6 caracteres");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Las contraseñas no coinciden");
       return;
     }
 
@@ -95,7 +105,7 @@ export default function Register() {
             />
 
             <TextInput
-              placeholder="Email"
+              placeholder="Correo electrónico"
               placeholderTextColor="#9CA3AF"
               autoCapitalize="none"
               value={email}
@@ -103,14 +113,72 @@ export default function Register() {
               style={styles.input}
             />
 
-            <TextInput
-              placeholder="Contraseña"
-              placeholderTextColor="#9CA3AF"
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-              style={styles.input}
-            />
+            <View style={styles.inputWrapper}>
+              <TextInput
+                placeholder="Contraseña"
+                placeholderTextColor="#9CA3AF"
+                secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={setPassword}
+                style={styles.inputInner}
+              />
+
+              <TouchableOpacity
+                onPress={() => setShowPassword((v) => !v)}
+                style={styles.eyeButton}
+              >
+                <Ionicons
+                  name={showPassword ? "eye-outline" : "eye-off-outline"}
+                  size={20}
+                  color="#9CA3AF"
+                />
+              </TouchableOpacity>
+            </View>
+
+            <View
+              style={[
+                styles.inputWrapper,
+                confirmPassword.length > 0 && {
+                  borderColor:
+                    password === confirmPassword ? "#10B981" : "#C93545",
+                },
+              ]}
+            >
+              <TextInput
+                placeholder="Confirmar contraseña"
+                placeholderTextColor="#9CA3AF"
+                secureTextEntry={!showConfirmPassword}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                style={styles.inputInner}
+              />
+
+              <TouchableOpacity
+                onPress={() => setShowConfirmPassword((v) => !v)}
+                style={styles.eyeButton}
+              >
+                <Ionicons
+                  name={showConfirmPassword ? "eye-outline" : "eye-off-outline"}
+                  size={20}
+                  color="#9CA3AF"
+                />
+              </TouchableOpacity>
+            </View>
+
+            {confirmPassword.length > 0 && (
+              <Text
+                style={[
+                  styles.matchText,
+                  {
+                    color: password === confirmPassword ? "#10B981" : "#C93545",
+                  },
+                ]}
+              >
+                {password === confirmPassword
+                  ? "Las contraseñas coinciden"
+                  : "Las contraseñas no coinciden"}
+              </Text>
+            )}
 
             {error ? <Text style={styles.error}>{error}</Text> : null}
 
@@ -218,6 +286,34 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E5E7EB",
     color: "#111827",
+  },
+
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F1F5F9",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    marginBottom: 14,
+    paddingRight: 12,
+  },
+  inputInner: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 15,
+    color: "#111827",
+  },
+  eyeButton: {
+    padding: 4,
+  },
+
+  matchText: {
+    fontSize: 12,
+    fontWeight: "500",
+    marginTop: -8,
+    marginBottom: 10,
   },
 
   error: {
