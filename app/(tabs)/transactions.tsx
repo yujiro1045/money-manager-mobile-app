@@ -1,6 +1,10 @@
 import CustomModal from "@/components/ui/CustomModal";
 import { BACKGROUND, CARD, MUTED, PRIMARY, TEXT } from "@/constants/theme2";
-import { TYPE_FILTERS, useTransactionList } from "@/hooks/useTrasactionList";
+import {
+  Transaction,
+  TYPE_FILTERS,
+  useTransactionList,
+} from "@/hooks/useTrasactionList";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import {
   FlatList,
@@ -12,11 +16,26 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type Transaction = {
-  id: string;
-  type: "income" | "expense";
-  amount: number;
-  category: string;
+const formatDate = (date: any) => {
+  if (!date) return "";
+
+  const d = date.toDate();
+  const today = new Date();
+
+  const isToday = d.toDateString() === today.toDateString();
+
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+
+  const isYesterday = d.toDateString() === yesterday.toDateString();
+
+  if (isToday) return "Hoy";
+  if (isYesterday) return "Ayer";
+
+  return d.toLocaleDateString("es-CO", {
+    day: "numeric",
+    month: "short",
+  });
 };
 
 export default function Transactions() {
@@ -37,6 +56,7 @@ export default function Transactions() {
 
   const renderItem = ({ item }: { item: Transaction }) => {
     const isExpense = item.type === "expense";
+
     return (
       <Pressable
         onPress={() => handlePressTx(item)}
@@ -49,12 +69,17 @@ export default function Transactions() {
             color={isExpense ? "#C93545" : "#21A179"}
           />
         </View>
+
         <View style={{ flex: 1 }}>
           <Text style={styles.txTitle}>{item.category}</Text>
+
           <Text style={styles.txSubtitle}>
             {isExpense ? "Gasto" : "Ingreso"}
           </Text>
+
+          <Text style={styles.txDate}>{formatDate(item.createdAt)}</Text>
         </View>
+
         <Text
           style={[styles.amount, isExpense ? styles.negative : styles.positive]}
         >
@@ -105,12 +130,22 @@ export default function Transactions() {
               onPress={toggleSortOrder}
             >
               <Ionicons
-                name={sortOrder === "desc" ? "arrow-down" : "arrow-up"}
+                name={
+                  sortOrder === "desc"
+                    ? "arrow-down"
+                    : sortOrder === "asc"
+                      ? "arrow-up"
+                      : "time-outline"
+                }
                 size={14}
                 color={PRIMARY}
               />
               <Text style={styles.sortButtonText}>
-                {sortOrder === "desc" ? "Mayor a menor" : "Menor a mayor"}
+                {sortOrder === "desc"
+                  ? "Mayor a menor"
+                  : sortOrder === "asc"
+                    ? "Menor a mayor"
+                    : "Por fecha"}
               </Text>
             </TouchableOpacity>
           </View>
@@ -196,6 +231,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "600",
     color: MUTED,
+  },
+  txDate: {
+    fontSize: 11,
+    color: MUTED,
+    marginTop: 2,
   },
   filterPillTextActive: {
     color: "#FFFFFF",

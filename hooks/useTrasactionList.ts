@@ -10,15 +10,16 @@ import {
 } from "firebase/firestore";
 import { useEffect, useMemo, useState } from "react";
 
-type Transaction = {
+export type Transaction = {
   id: string;
   type: "income" | "expense";
   amount: number;
   category: string;
+  createdAt: any;
 };
 
 export type FilterType = "all" | "income" | "expense";
-export type SortOrder = "desc" | "asc";
+export type SortOrder = "default" | "desc" | "asc";
 
 export const TYPE_FILTERS: { label: string; value: FilterType }[] = [
   { label: "Todos", value: "all" },
@@ -35,7 +36,7 @@ export const useTransactionList = () => {
     "detail" | "confirm" | "success" | null
   >(null);
   const [filterType, setFilterType] = useState<FilterType>("all");
-  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("default");
 
   useEffect(() => {
     if (!user) return;
@@ -55,12 +56,17 @@ export const useTransactionList = () => {
 
   const filteredTransactions = useMemo(() => {
     let result = [...transactions];
+
     if (filterType !== "all") {
       result = result.filter((tx) => tx.type === filterType);
     }
-    result.sort((a, b) =>
-      sortOrder === "desc" ? b.amount - a.amount : a.amount - b.amount,
-    );
+
+    if (sortOrder === "desc") {
+      result.sort((a, b) => b.amount - a.amount);
+    } else if (sortOrder === "asc") {
+      result.sort((a, b) => a.amount - b.amount);
+    }
+
     return result;
   }, [transactions, filterType, sortOrder]);
 
@@ -86,7 +92,11 @@ export const useTransactionList = () => {
   };
 
   const toggleSortOrder = () =>
-    setSortOrder((o) => (o === "desc" ? "asc" : "desc"));
+    setSortOrder((prev) => {
+      if (prev === "default") return "desc";
+      if (prev === "desc") return "asc";
+      return "default";
+    });
 
   return {
     filteredTransactions,
