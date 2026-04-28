@@ -2,7 +2,9 @@ import { ALL_CATEGORIES, useQuickCategories } from "@/hooks/useQuickCategories";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import {
   FlatList,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -104,11 +106,18 @@ const QuickCategories = () => {
         transparent
         statusBarTranslucent
       >
-        <View style={styles.overlay}>
-          <TouchableOpacity style={styles.backdrop} onPress={closeSheet} />
+        <TouchableOpacity style={styles.backdrop} onPress={closeSheet} />
+        <KeyboardAvoidingView
+          behavior="padding"
+          keyboardVerticalOffset={Platform.OS === "android" ? -500 : 0}
+          style={styles.keyboardView}
+        >
           <View style={styles.sheet}>
             <View style={styles.sheetHandle} />
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
               <CardTransaction
                 defaultCategory={selectedCat?.label}
                 defaultType={selectedCat?.type}
@@ -116,16 +125,8 @@ const QuickCategories = () => {
               />
             </ScrollView>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
-
-      {/* <CustomModal
-        visible={showSuccess}
-        title="¡Transacción añadida!"
-        message="Tu transacción se registró correctamente."
-        confirmText="Aceptar"
-        onConfirm={closeSuccess}
-      /> */}
     </>
   );
 };
@@ -177,6 +178,10 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   overlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+  },
+  keyboardView: {
     flex: 1,
     justifyContent: "flex-end",
   },

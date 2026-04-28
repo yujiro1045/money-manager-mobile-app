@@ -55,7 +55,8 @@ export default function Login() {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === "android" ? "padding" : "height"}
+      behavior="padding"
+      keyboardVerticalOffset={Platform.OS === "android" ? -500 : 0}
     >
       <ScrollView
         contentContainerStyle={styles.screen}

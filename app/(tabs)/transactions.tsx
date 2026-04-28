@@ -8,29 +8,23 @@ import {
 import Ionicons from "@expo/vector-icons/Ionicons";
 import {
   FlatList,
-  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { Swipeable } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const formatDate = (date: any) => {
   if (!date) return "";
-
   const d = date.toDate();
   const today = new Date();
-
-  const isToday = d.toDateString() === today.toDateString();
-
   const yesterday = new Date();
   yesterday.setDate(today.getDate() - 1);
 
-  const isYesterday = d.toDateString() === yesterday.toDateString();
-
-  if (isToday) return "Hoy";
-  if (isYesterday) return "Ayer";
+  if (d.toDateString() === today.toDateString()) return "Hoy";
+  if (d.toDateString() === yesterday.toDateString()) return "Ayer";
 
   return d.toLocaleDateString("es-CO", {
     day: "numeric",
@@ -41,53 +35,65 @@ const formatDate = (date: any) => {
 export default function Transactions() {
   const {
     filteredTransactions,
-    selectedTx,
     modalType,
     filterType,
     sortOrder,
     setFilterType,
     toggleSortOrder,
-    handlePressTx,
     closeAllModal,
     handleDeleteConfirmed,
-    openConfirm,
+    openConfirmWithTx,
     closeSuccess,
   } = useTransactionList();
+
+  const renderRightActions = (item: Transaction) => (
+    <TouchableOpacity
+      style={styles.deleteAction}
+      onPress={() => openConfirmWithTx(item)}
+    >
+      <Ionicons name="trash-outline" size={22} color="#FFFFFF" />
+      <Text style={styles.deleteActionText}>Eliminar</Text>
+    </TouchableOpacity>
+  );
 
   const renderItem = ({ item }: { item: Transaction }) => {
     const isExpense = item.type === "expense";
 
     return (
-      <Pressable
-        onPress={() => handlePressTx(item)}
-        style={({ pressed }) => [styles.row, pressed && { opacity: 0.7 }]}
+      <Swipeable
+        renderRightActions={() => renderRightActions(item)}
+        overshootRight={false}
+        friction={2}
       >
-        <View style={styles.iconContainer}>
-          <Ionicons
-            name={isExpense ? "arrow-down" : "arrow-up"}
-            size={20}
-            color={isExpense ? "#C93545" : "#21A179"}
-          />
-        </View>
+        <View style={styles.row}>
+          <View style={styles.iconContainer}>
+            <Ionicons
+              name={isExpense ? "arrow-down" : "arrow-up"}
+              size={20}
+              color={isExpense ? "#C93545" : "#21A179"}
+            />
+          </View>
 
-        <View style={{ flex: 1 }}>
-          <Text style={styles.txTitle}>{item.category}</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.txTitle}>{item.category}</Text>
+            <Text style={styles.txSubtitle}>
+              {isExpense ? "Gasto" : "Ingreso"}
+            </Text>
+            <Text style={styles.txDate}>{formatDate(item.createdAt)}</Text>
+          </View>
 
-          <Text style={styles.txSubtitle}>
-            {isExpense ? "Gasto" : "Ingreso"}
+          <Text
+            style={[
+              styles.amount,
+              isExpense ? styles.negative : styles.positive,
+            ]}
+          >
+            {isExpense
+              ? `- $${item.amount.toLocaleString("es-CO")}`
+              : `+ $${item.amount.toLocaleString("es-CO")}`}
           </Text>
-
-          <Text style={styles.txDate}>{formatDate(item.createdAt)}</Text>
         </View>
-
-        <Text
-          style={[styles.amount, isExpense ? styles.negative : styles.positive]}
-        >
-          {isExpense
-            ? `- $${item.amount.toLocaleString("es-CO")}`
-            : `+ $${item.amount.toLocaleString("es-CO")}`}
-        </Text>
-      </Pressable>
+      </Swipeable>
     );
   };
 
@@ -156,17 +162,6 @@ export default function Transactions() {
         contentContainerStyle={styles.listContent}
       />
 
-      {modalType === "detail" && (
-        <CustomModal
-          visible
-          title={selectedTx?.category ?? ""}
-          message={`Tipo: ${selectedTx?.type}\nMonto: $${selectedTx?.amount.toLocaleString("es-CO")}`}
-          confirmText="Eliminar"
-          cancelText="Cerrar"
-          onCancel={closeAllModal}
-          onConfirm={openConfirm}
-        />
-      )}
       {modalType === "confirm" && (
         <CustomModal
           visible
@@ -232,11 +227,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: MUTED,
   },
-  txDate: {
-    fontSize: 11,
-    color: MUTED,
-    marginTop: 2,
-  },
   filterPillTextActive: {
     color: "#FFFFFF",
   },
@@ -290,6 +280,11 @@ const styles = StyleSheet.create({
     color: MUTED,
     marginTop: 2,
   },
+  txDate: {
+    fontSize: 11,
+    color: MUTED,
+    marginTop: 2,
+  },
   amount: {
     fontSize: 16,
     fontWeight: "700",
@@ -301,5 +296,19 @@ const styles = StyleSheet.create({
     marginTop: 40,
     color: MUTED,
     fontSize: 14,
+  },
+  deleteAction: {
+    backgroundColor: "#C93545",
+    justifyContent: "center",
+    alignItems: "center",
+    width: 80,
+    borderRadius: 16,
+    marginBottom: 12,
+    gap: 4,
+  },
+  deleteActionText: {
+    color: "#FFFFFF",
+    fontSize: 11,
+    fontWeight: "600",
   },
 });

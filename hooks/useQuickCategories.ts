@@ -21,7 +21,6 @@ export const ALL_CATEGORIES: QuickCategory[] = [
   { label: "Deudas", icon: "credit-card", type: "expense" },
   { label: "Internet", icon: "wifi", type: "expense" },
   { label: "Celular", icon: "cellphone", type: "expense" },
-  // Ingresos
   { label: "Salario", icon: "cash", type: "income" },
   { label: "Freelance", icon: "laptop", type: "income" },
   { label: "Negocio", icon: "store", type: "income" },

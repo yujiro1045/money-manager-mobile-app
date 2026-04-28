@@ -32,9 +32,9 @@ export const useTransactionList = () => {
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
-  const [modalType, setModalType] = useState<
-    "detail" | "confirm" | "success" | null
-  >(null);
+  const [modalType, setModalType] = useState<"confirm" | "success" | null>(
+    null,
+  );
   const [filterType, setFilterType] = useState<FilterType>("all");
   const [sortOrder, setSortOrder] = useState<SortOrder>("default");
 
@@ -86,9 +86,9 @@ export const useTransactionList = () => {
     }
   };
 
-  const handlePressTx = (tx: Transaction) => {
+  const openConfirmWithTx = (tx: Transaction) => {
     setSelectedTx(tx);
-    setModalType("detail");
+    setModalType("confirm");
   };
 
   const toggleSortOrder = () =>
@@ -106,10 +106,9 @@ export const useTransactionList = () => {
     sortOrder,
     setFilterType,
     toggleSortOrder,
-    handlePressTx,
     closeAllModal,
     handleDeleteConfirmed,
-    openConfirm: () => setModalType("confirm"),
+    openConfirmWithTx,
     closeSuccess: () => setModalType(null),
   };
 };

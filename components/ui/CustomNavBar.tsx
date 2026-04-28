@@ -26,7 +26,6 @@ import NavBarNotch, {
 
 const CustomNavBar: React.FC<BottomTabBarProps> = ({ state, navigation }) => {
   const [showSheet, setShowSheet] = useState(false);
-  //const [showSuccess, setShowSuccess] = useState(false);
 
   const routes = state.routes;
   const mid = Math.floor(routes.length / 2);
@@ -99,7 +98,8 @@ const CustomNavBar: React.FC<BottomTabBarProps> = ({ state, navigation }) => {
           onPress={() => setShowSheet(false)}
         />
         <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          behavior="padding"
+          keyboardVerticalOffset={Platform.OS === "android" ? -500 : 0}
           style={styles.keyboardView}
         >
           <View style={styles.sheet}>
@@ -117,14 +117,6 @@ const CustomNavBar: React.FC<BottomTabBarProps> = ({ state, navigation }) => {
           </View>
         </KeyboardAvoidingView>
       </Modal>
-
-      {/*  <CustomModal
-        visible={showSuccess}
-        title="¡Transacción añadida!"
-        message="Tu transacción se registró correctamente."
-        confirmText="Aceptar"
-        onConfirm={() => setShowSuccess(false)}
-      /> */}
     </>
   );
 
