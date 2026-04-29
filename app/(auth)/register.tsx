@@ -67,9 +67,9 @@ export default function Register() {
   };
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior="padding"
-      keyboardVerticalOffset={Platform.OS === "android" ? -500 : 0}
+      style={styles.keyboardView}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={60}
     >
       <ScrollView
         contentContainerStyle={styles.screen}
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     elevation: 10,
   },
-
+  keyboardView: { flex: 1 },
   hero: {
     backgroundColor: "#3bb48eff",
     paddingVertical: 40,

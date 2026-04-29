@@ -108,8 +108,8 @@ const QuickCategories = () => {
       >
         <TouchableOpacity style={styles.backdrop} onPress={closeSheet} />
         <KeyboardAvoidingView
-          behavior="padding"
-          keyboardVerticalOffset={Platform.OS === "android" ? -500 : 0}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          keyboardVerticalOffset={60}
           style={styles.keyboardView}
         >
           <View style={styles.sheet}>

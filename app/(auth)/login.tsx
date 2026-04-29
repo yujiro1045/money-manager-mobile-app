@@ -54,9 +54,9 @@ export default function Login() {
   };
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior="padding"
-      keyboardVerticalOffset={Platform.OS === "android" ? -500 : 0}
+      style={styles.keyboardView}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={60}
     >
       <ScrollView
         contentContainerStyle={styles.screen}
@@ -174,6 +174,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     alignItems: "center",
   },
+  keyboardView: { flex: 1 },
 
   logoCircle: {
     width: 56,

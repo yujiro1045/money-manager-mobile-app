@@ -93,15 +93,15 @@ const CustomNavBar: React.FC<BottomTabBarProps> = ({ state, navigation }) => {
         transparent
         statusBarTranslucent
       >
-        <TouchableOpacity
-          style={styles.backdrop}
-          onPress={() => setShowSheet(false)}
-        />
         <KeyboardAvoidingView
-          behavior="padding"
-          keyboardVerticalOffset={Platform.OS === "android" ? -500 : 0}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          keyboardVerticalOffset={60}
           style={styles.keyboardView}
         >
+          <TouchableOpacity
+            style={styles.backdrop}
+            onPress={() => setShowSheet(false)}
+          />
           <View style={styles.sheet}>
             <View style={styles.sheetHandle} />
             <ScrollView
@@ -206,10 +206,6 @@ const styles = StyleSheet.create({
     lineHeight: 34,
   },
 
-  overlay: {
-    flex: 1,
-    justifyContent: "flex-end",
-  },
   keyboardView: {
     flex: 1,
     justifyContent: "flex-end",
