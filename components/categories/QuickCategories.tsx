@@ -2,15 +2,13 @@ import { ALL_CATEGORIES, useQuickCategories } from "@/hooks/useQuickCategories";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import {
   FlatList,
-  KeyboardAvoidingView,
   Modal,
-  Platform,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import CardTransaction from "../cards/CardTransaction";
 
 const QuickCategories = () => {
@@ -106,15 +104,19 @@ const QuickCategories = () => {
         transparent
         statusBarTranslucent
       >
-        <TouchableOpacity style={styles.backdrop} onPress={closeSheet} />
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          keyboardVerticalOffset={60}
-          style={styles.keyboardView}
-        >
+        <View style={styles.modalContainer}>
+          {/* Área que cierra al tocar */}
+          <TouchableOpacity
+            style={styles.backdropArea}
+            onPress={closeSheet}
+            activeOpacity={1}
+          />
+
+          {/* Sheet */}
           <View style={styles.sheet}>
             <View style={styles.sheetHandle} />
-            <ScrollView
+            <KeyboardAwareScrollView
+              bottomOffset={62}
               showsVerticalScrollIndicator={false}
               keyboardShouldPersistTaps="handled"
             >
@@ -123,9 +125,9 @@ const QuickCategories = () => {
                 defaultType={selectedCat?.type}
                 onSubmit={handleSubmit}
               />
-            </ScrollView>
+            </KeyboardAwareScrollView>
           </View>
-        </KeyboardAvoidingView>
+        </View>
       </Modal>
     </>
   );
@@ -182,7 +184,6 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   keyboardView: {
-    flex: 1,
     justifyContent: "flex-end",
   },
   backdrop: {
@@ -211,5 +212,13 @@ const styles = StyleSheet.create({
     color: "#111827",
     marginBottom: 16,
     textAlign: "center",
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
+  },
+  backdropArea: {
+    flex: 1,
   },
 });

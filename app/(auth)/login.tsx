@@ -5,16 +5,14 @@ import { Link } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -43,6 +41,7 @@ export default function Login() {
           setError("El usuario no existe");
           break;
         case "auth/wrong-password":
+        case "auth/invalid-credential":
           setError("Contraseña incorrecta");
           break;
         default:
@@ -53,100 +52,94 @@ export default function Login() {
     }
   };
   return (
-    <KeyboardAvoidingView
-      style={styles.keyboardView}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={60}
+    <KeyboardAwareScrollView
+      bottomOffset={50}
+      contentContainerStyle={styles.screen}
+      keyboardShouldPersistTaps="handled"
     >
-      <ScrollView
-        contentContainerStyle={styles.screen}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.card}>
-          <View style={styles.hero}>
-            <View style={styles.logoCircle}>
-              <LoginIcon size={24} color="white" />
-            </View>
-
-            <Text style={styles.heroTitle}>Bienvenido de nuevo</Text>
-
-            <View style={styles.containerSubtititle}>
-              <Text style={styles.heroSubtitle}>
-                Ingresa y mantén tus finanzas bajo control
-              </Text>
-
-              <Text style={styles.description}>
-                Con Money Manager podrás visualizar tus ingresos y gastos de
-                forma sencilla y efectiva.
-              </Text>
-            </View>
+      <View style={styles.card}>
+        <View style={styles.hero}>
+          <View style={styles.logoCircle}>
+            <LoginIcon size={24} color="white" />
           </View>
 
-          <View style={styles.form}>
-            <Text style={styles.formTitle}>Iniciar sesión</Text>
-            <Text style={styles.formSubtitle}>
-              Accede a tu cuenta para continuar
+          <Text style={styles.heroTitle}>Bienvenido de nuevo</Text>
+
+          <View style={styles.containerSubtititle}>
+            <Text style={styles.heroSubtitle}>
+              Ingresa y mantén tus finanzas bajo control
             </Text>
 
-            <TextInput
-              placeholder="Correo electrónico"
-              placeholderTextColor="#9CA3AF"
-              autoCapitalize="none"
-              value={email}
-              onChangeText={setEmail}
-              style={styles.input}
-            />
-
-            <View style={styles.inputWrapper}>
-              <TextInput
-                placeholder="Contraseña"
-                placeholderTextColor="#9CA3AF"
-                secureTextEntry={!showPassword}
-                value={password}
-                onChangeText={setPassword}
-                style={styles.inputInner}
-              />
-
-              <TouchableOpacity
-                onPress={() => setShowPassword((v) => !v)}
-                style={styles.eyeButton}
-              >
-                <Ionicons
-                  name={showPassword ? "eye-outline" : "eye-off-outline"}
-                  size={20}
-                  color="#9CA3AF"
-                />
-              </TouchableOpacity>
-            </View>
-
-            {error ? <Text style={styles.error}>{error}</Text> : null}
-
-            <Pressable
-              style={({ pressed }) => [
-                styles.button,
-                pressed && { opacity: 0.9 },
-              ]}
-              onPress={handleLogin}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Iniciar sesión</Text>
-              )}
-            </Pressable>
-
-            <Text style={styles.link}>
-              ¿No tienes cuenta?
-              <Link href="/(auth)/register">
-                <Text style={styles.linkBold}> Regístrate</Text>
-              </Link>
+            <Text style={styles.description}>
+              Con Money Manager podrás visualizar tus ingresos y gastos de forma
+              sencilla y efectiva.
             </Text>
           </View>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+
+        <View style={styles.form}>
+          <Text style={styles.formTitle}>Iniciar sesión</Text>
+          <Text style={styles.formSubtitle}>
+            Accede a tu cuenta para continuar
+          </Text>
+
+          <TextInput
+            placeholder="Correo electrónico"
+            placeholderTextColor="#9CA3AF"
+            autoCapitalize="none"
+            value={email}
+            onChangeText={setEmail}
+            style={styles.input}
+          />
+
+          <View style={styles.inputWrapper}>
+            <TextInput
+              placeholder="Contraseña"
+              placeholderTextColor="#9CA3AF"
+              secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={setPassword}
+              style={styles.inputInner}
+            />
+
+            <TouchableOpacity
+              onPress={() => setShowPassword((v) => !v)}
+              style={styles.eyeButton}
+            >
+              <Ionicons
+                name={showPassword ? "eye-outline" : "eye-off-outline"}
+                size={20}
+                color="#9CA3AF"
+              />
+            </TouchableOpacity>
+          </View>
+
+          {error ? <Text style={styles.error}>{error}</Text> : null}
+
+          <Pressable
+            style={({ pressed }) => [
+              styles.button,
+              pressed && { opacity: 0.9 },
+            ]}
+            onPress={handleLogin}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Iniciar sesión</Text>
+            )}
+          </Pressable>
+
+          <Text style={styles.link}>
+            ¿No tienes cuenta?
+            <Link href="/(auth)/register">
+              <Text style={styles.linkBold}> Regístrate</Text>
+            </Link>
+          </Text>
+        </View>
+      </View>
+    </KeyboardAwareScrollView>
   );
 }
 
@@ -174,7 +167,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     alignItems: "center",
   },
-  keyboardView: { flex: 1 },
+  //keyboardView: { flex: 1 },
 
   logoCircle: {
     width: 56,

@@ -10,14 +10,13 @@ import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Text } from "@react-navigation/elements";
 import React, { useState } from "react";
 import {
-  KeyboardAvoidingView,
   Modal,
-  Platform,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import NavBarNotch, {
   BAR_HEIGHT,
   BAR_WIDTH,
@@ -93,10 +92,9 @@ const CustomNavBar: React.FC<BottomTabBarProps> = ({ state, navigation }) => {
         transparent
         statusBarTranslucent
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          keyboardVerticalOffset={60}
-          style={styles.keyboardView}
+        <KeyboardAwareScrollView
+          bottomOffset={62}
+          contentContainerStyle={styles.keyboardView}
         >
           <TouchableOpacity
             style={styles.backdrop}
@@ -115,7 +113,7 @@ const CustomNavBar: React.FC<BottomTabBarProps> = ({ state, navigation }) => {
               />
             </ScrollView>
           </View>
-        </KeyboardAvoidingView>
+        </KeyboardAwareScrollView>
       </Modal>
     </>
   );
