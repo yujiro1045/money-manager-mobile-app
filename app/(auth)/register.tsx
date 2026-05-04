@@ -5,8 +5,6 @@ import { Link } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -15,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
 export default function Register() {
   const [name, setName] = useState("");
@@ -66,10 +65,11 @@ export default function Register() {
     }
   };
   return (
-    <KeyboardAvoidingView
-      style={styles.keyboardView}
-      behavior="padding"
-      keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+    <KeyboardAwareScrollView
+      bottomOffset={50}
+      contentContainerStyle={styles.keyboardView}
+      keyboardShouldPersistTaps="handled"
+      showsHorizontalScrollIndicator={false}
     >
       <ScrollView
         contentContainerStyle={styles.screen}
@@ -200,7 +200,7 @@ export default function Register() {
           </View>
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardAwareScrollView>
   );
 }
 

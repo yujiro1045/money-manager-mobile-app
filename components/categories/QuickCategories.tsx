@@ -105,14 +105,12 @@ const QuickCategories = () => {
         statusBarTranslucent
       >
         <View style={styles.modalContainer}>
-          {/* Área que cierra al tocar */}
           <TouchableOpacity
             style={styles.backdropArea}
             onPress={closeSheet}
             activeOpacity={1}
           />
 
-          {/* Sheet */}
           <View style={styles.sheet}>
             <View style={styles.sheetHandle} />
             <KeyboardAwareScrollView

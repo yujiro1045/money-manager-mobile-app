@@ -10,6 +10,7 @@ import "react-native-reanimated";
 import { TransactionsProvider } from "@/context/TransactionsContext";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 import { AuthProvider } from "../context/AuthContext";
 
 export default function RootLayout() {
@@ -17,19 +18,21 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <AuthProvider>
-        <TransactionsProvider>
-          <ThemeProvider
-            value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-          >
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="(auth)" />
-              <Stack.Screen name="(tabs)" />
-            </Stack>
-            <StatusBar style="dark" />
-          </ThemeProvider>
-        </TransactionsProvider>
-      </AuthProvider>
+      <KeyboardProvider>
+        <AuthProvider>
+          <TransactionsProvider>
+            <ThemeProvider
+              value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+            >
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="(auth)" />
+                <Stack.Screen name="(tabs)" />
+              </Stack>
+              <StatusBar style="dark" />
+            </ThemeProvider>
+          </TransactionsProvider>
+        </AuthProvider>
+      </KeyboardProvider>
     </GestureHandlerRootView>
   );
 }
