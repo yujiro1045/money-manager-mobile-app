@@ -106,5 +106,6 @@ export const useBalanceByPeriod = () => {
     goBack: () => setOffset((o) => o - 1),
     goForward: () => setOffset((o) => o + 1),
     isCurrentPeriod: offset === 0,
+    transactions,
   };
 };

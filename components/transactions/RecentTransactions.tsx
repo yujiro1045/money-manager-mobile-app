@@ -8,6 +8,7 @@ import {
   Text,
   View,
 } from "react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 const MAX_RECENT = 5;
 
@@ -26,7 +27,7 @@ function getCategoryInitial(category: string): string {
   return category?.charAt(0).toUpperCase() ?? "?";
 }
 
-const TransactionItem: React.FC<{ item: Transaction }> = ({ item }) => {
+const TransactionItem: React.FC<{ item: Transaction; categoryIcon?: string }> = ({ item, categoryIcon }) => {
   const isExpense = item.type === "expense";
 
   return (
@@ -37,14 +38,22 @@ const TransactionItem: React.FC<{ item: Transaction }> = ({ item }) => {
           { backgroundColor: isExpense ? "#FFE5E5" : "#E5FFE9" },
         ]}
       >
-        <Text
-          style={[
-            styles.iconText,
-            { color: isExpense ? "#E53935" : "#2E7D32" },
-          ]}
-        >
-          {getCategoryInitial(item.category)}
-        </Text>
+        {categoryIcon ? (
+          <Ionicons
+            name={categoryIcon as any}
+            size={20}
+            color={isExpense ? "#E53935" : "#2E7D32"}
+          />
+        ) : (
+          <Text
+            style={[
+              styles.iconText,
+              { color: isExpense ? "#E53935" : "#2E7D32" },
+            ]}
+          >
+            {getCategoryInitial(item.category)}
+          </Text>
+        )}
       </View>
 
       <View style={styles.info}>
@@ -62,8 +71,15 @@ const TransactionItem: React.FC<{ item: Transaction }> = ({ item }) => {
 };
 
 const RecentTransactions: React.FC = () => {
-  const { transactions, loading } = useTransactions();
+  const { transactions, loading, categories } = useTransactions();
   const recent = transactions.slice(0, MAX_RECENT);
+
+  const getCategoryIcon = (categoryName: string): string | null => {
+    const category = categories.find(
+      (c) => c.name.toLowerCase() === categoryName.toLowerCase()
+    );
+    return category?.icon || null;
+  };
 
   return (
     <View style={styles.container}>
@@ -79,7 +95,12 @@ const RecentTransactions: React.FC = () => {
         <FlatList
           data={recent}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <TransactionItem item={item} />}
+          renderItem={({ item }) => (
+            <TransactionItem
+              item={item}
+              categoryIcon={getCategoryIcon(item.category)}
+            />
+          )}
           scrollEnabled={false}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
         />

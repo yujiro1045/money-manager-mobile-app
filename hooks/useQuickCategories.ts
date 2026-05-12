@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useTransactions } from "@/context/TransactionsContext";
+import { useMemo, useState } from "react";
 
 export type QuickCategory = {
   label: string;
@@ -6,7 +7,7 @@ export type QuickCategory = {
   type: "income" | "expense";
 };
 
-export const ALL_CATEGORIES: QuickCategory[] = [
+export const DEFAULT_CATEGORIES: QuickCategory[] = [
   { label: "Alimentación", icon: "food", type: "expense" },
   { label: "Transporte", icon: "bus", type: "expense" },
   { label: "Salud", icon: "medical-bag", type: "expense" },
@@ -27,14 +28,43 @@ export const ALL_CATEGORIES: QuickCategory[] = [
   { label: "Inversión", icon: "chart-line", type: "income" },
   { label: "Alquiler", icon: "home-city", type: "income" },
   { label: "Regalo", icon: "gift", type: "income" },
+  { label: "Bonificación", icon: "star-circle", type: "income" },
+  { label: "Venta", icon: "tag-multiple", type: "income" },
+  { label: "Reembolso", icon: "undo", type: "income" },
 ];
+
+// Exportar para compatibilidad
+export const ALL_CATEGORIES = DEFAULT_CATEGORIES;
 
 export const VISIBLE_COUNT = 7;
 
 export const useQuickCategories = () => {
+  const { categories } = useTransactions();
   const [selectedCat, setSelectedCat] = useState<QuickCategory | null>(null);
   const [showSheet, setShowSheet] = useState(false);
   const [showAll, setShowAll] = useState(false);
+
+  // Combina categorías predefinidas con las del usuario, evitando duplicados
+  const allCategories = useMemo(() => {
+    const merged = [...DEFAULT_CATEGORIES];
+
+    categories.forEach((cat) => {
+      const exists = merged.some(
+        (m) =>
+          m.label.toLowerCase() === cat.name.toLowerCase() &&
+          m.icon === cat.icon,
+      );
+      if (!exists && cat.icon) {
+        merged.push({
+          label: cat.name,
+          icon: cat.icon,
+          type: "expense", // Por defecto se consideran gastos
+        });
+      }
+    });
+
+    return merged;
+  }, [categories]);
 
   const handlePress = (cat: QuickCategory) => {
     setSelectedCat(cat);
@@ -50,8 +80,8 @@ export const useQuickCategories = () => {
     selectedCat,
     showSheet,
     showAll,
-    visibleCategories: ALL_CATEGORIES.slice(0, VISIBLE_COUNT),
-    allCategories: ALL_CATEGORIES,
+    visibleCategories: allCategories.slice(0, VISIBLE_COUNT),
+    allCategories,
     handlePress,
     handleSubmit,
     openAll: () => setShowAll(true),

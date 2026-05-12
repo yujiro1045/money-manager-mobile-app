@@ -1,13 +1,14 @@
-import { ALL_CATEGORIES, useQuickCategories } from "@/hooks/useQuickCategories";
+import { useQuickCategories } from "@/hooks/useQuickCategories";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import {
-  FlatList,
   Modal,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import CardTransaction from "../cards/CardTransaction";
 
@@ -22,13 +23,18 @@ const QuickCategories = () => {
     showAll,
     showSheet,
     visibleCategories,
+    allCategories,
   } = useQuickCategories();
 
-  const renderCategory = (cat: (typeof ALL_CATEGORIES)[0], index: number) => (
+  const expenseCategories = allCategories.filter((c) => c.type === "expense");
+  const incomeCategories = allCategories.filter((c) => c.type === "income");
+
+  const renderCategory = (cat: (typeof allCategories)[0], index: number) => (
     <TouchableOpacity
       key={index}
       style={styles.item}
       onPress={() => handlePress(cat)}
+      activeOpacity={0.7}
     >
       <View
         style={[
@@ -47,6 +53,22 @@ const QuickCategories = () => {
       </Text>
     </TouchableOpacity>
   );
+
+  const renderCategoryGrid = (categories: typeof allCategories) => {
+    const rows = [];
+    for (let i = 0; i < categories.length; i += 4) {
+      rows.push(categories.slice(i, i + 4));
+    }
+    return (
+      <View>
+        {rows.map((row, rowIndex) => (
+          <View key={rowIndex} style={styles.row}>
+            {row.map((cat, catIndex) => renderCategory(cat, catIndex))}
+          </View>
+        ))}
+      </View>
+    );
+  };
 
   return (
     <>
@@ -84,16 +106,31 @@ const QuickCategories = () => {
           <TouchableOpacity style={styles.backdrop} onPress={closeAll} />
           <View style={styles.sheet}>
             <View style={styles.sheetHandle} />
-            <Text style={styles.sheetTitle}>Todas las categorías</Text>
-            <FlatList
-              data={ALL_CATEGORIES}
-              keyExtractor={(item, i) => `${item.label}-${i}`}
-              numColumns={4}
+            <View style={styles.sheetHeader}>
+              <Text style={styles.sheetTitle}>Todas las categorías</Text>
+              <TouchableOpacity onPress={closeAll} style={styles.closeButton}>
+                <MaterialCommunityIcons
+                  name="close"
+                  size={24}
+                  color="#374151"
+                />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ gap: 12 }}
-              columnWrapperStyle={styles.row}
-              renderItem={({ item, index }) => renderCategory(item, index)}
-            />
+              contentContainerStyle={styles.scrollContent}
+            >
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Gastos</Text>
+                {renderCategoryGrid(expenseCategories)}
+              </View>
+
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Ingresos</Text>
+                {renderCategoryGrid(incomeCategories)}
+              </View>
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -139,7 +176,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 16,
     marginVertical: 10,
-    gap: 12,
+    gap: 14,
     shadowColor: "#000",
     shadowOpacity: 0.06,
     shadowRadius: 10,
@@ -149,11 +186,13 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
+    gap: 12,
   },
   item: {
     flex: 1,
     alignItems: "center",
-    gap: 6,
+    gap: 10,
+    marginTop: 5,
   },
   iconBox: {
     width: 54,
@@ -161,15 +200,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
-  },
-  icon: {
-    fontSize: 24,
-  },
-  seeAllIcon: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#6B7280",
-    letterSpacing: 2,
   },
   itemLabel: {
     fontSize: 11,
@@ -181,20 +211,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-end",
   },
-  keyboardView: {
-    justifyContent: "flex-end",
-  },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.5)",
   },
   sheet: {
-    backgroundColor: "#F9FAFB",
+    backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 16,
     paddingBottom: 40,
-    maxHeight: "85%",
+    maxHeight: "90%",
   },
   sheetHandle: {
     width: 40,
@@ -204,12 +231,38 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginBottom: 12,
   },
+  sheetHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
   sheetTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "700",
     color: "#111827",
-    marginBottom: 16,
-    textAlign: "center",
+  },
+  closeButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: "#F3F4F6",
+  },
+  scrollContent: {
+    paddingBottom: 20,
+  },
+  section: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#111827",
+    marginBottom: 12,
+  },
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
   },
   modalContainer: {
     flex: 1,

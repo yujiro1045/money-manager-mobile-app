@@ -23,6 +23,7 @@ export interface Transaction {
 export interface Category {
   id: string;
   name: string;
+  icon?: string;
   createdAt: any;
 }
 
@@ -38,7 +39,7 @@ type TxContextType = {
   loading: boolean;
   addTransaction: (tx: CreateTxInput) => Promise<void>;
   removeTransaction: (id: string) => Promise<void>;
-  addCategory: (name: string) => Promise<void>;
+  addCategory: (name: string, icon?: string) => Promise<void>;
 };
 
 const TransactionsContext = createContext<TxContextType>({
@@ -112,7 +113,7 @@ export const TransactionsProvider = ({
     await deleteDoc(doc(db, "users", user.uid, "transactions", id));
   };
 
-  const addCategory = async (name: string) => {
+  const addCategory = async (name: string, icon?: string) => {
     if (!user) return;
     const exists = categories.some(
       (c) => c.name.toLowerCase() === name.trim().toLowerCase(),
@@ -120,6 +121,7 @@ export const TransactionsProvider = ({
     if (exists) return;
     await addDoc(collection(db, "users", user.uid, "categories"), {
       name: name.trim(),
+      icon: icon || "🏷️",
       createdAt: serverTimestamp(),
     });
   };

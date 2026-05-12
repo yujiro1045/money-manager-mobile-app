@@ -1,6 +1,7 @@
+import WeeklyCalendar from "@/components/cards/WeeklyCalendar";
 import { Period, useBalanceByPeriod } from "@/hooks/useBalanceByPeriod";
+import { useWeeklyCalendar } from "@/hooks/useWeeklyCalendar";
 import Ionicons from "@expo/vector-icons/Ionicons";
-
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -23,7 +24,18 @@ const CardBalance = () => {
     goBack,
     goForward,
     isCurrentPeriod,
+    transactions,
   } = useBalanceByPeriod();
+
+  const {
+    selectedDay,
+    weekOffset,
+    dayData,
+    dayLabel,
+    handleDayPress,
+    handlePrevWeek,
+    handleNextWeek,
+  } = useWeeklyCalendar(transactions);
 
   const formatCurrency = (value: number) =>
     value.toLocaleString("es-CO", {
@@ -32,6 +44,13 @@ const CardBalance = () => {
       maximumFractionDigits: 0,
     });
 
+  const isWeekPeriod = period === "week";
+
+  const displayBalance = dayData ? dayData.balance : balance;
+  const displayIncome = dayData ? dayData.income : income;
+  const displayExpense = dayData ? dayData.expense : expense;
+  const displayLabel = dayLabel ?? periodLabel;
+
   return (
     <LinearGradient
       colors={["#1E1F8E", "#3B3DBF", "#6B6FE0"]}
@@ -39,20 +58,27 @@ const CardBalance = () => {
       end={{ x: 1, y: 1 }}
       style={styles.card}
     >
+      {/* Selectores */}
       <View style={styles.selectersRow}>
         {SELECTERS.map((selecter) => (
           <TouchableOpacity
             key={selecter.value}
             style={[
               styles.selecter,
-              period === selecter.value && styles.selecterActive,
+              period === selecter.value &&
+                !selectedDay &&
+                styles.selecterActive,
             ]}
-            onPress={() => handlePeriod(selecter.value)}
+            onPress={() => {
+              handlePeriod(selecter.value);
+            }}
           >
             <Text
               style={[
                 styles.selecterText,
-                period === selecter.value && styles.selecterTextActive,
+                period === selecter.value &&
+                  !selectedDay &&
+                  styles.selecterTextActive,
               ]}
             >
               {selecter.label}
@@ -61,35 +87,49 @@ const CardBalance = () => {
         ))}
       </View>
 
-      <View style={styles.navRow}>
-        <TouchableOpacity style={styles.navButton} onPress={goBack}>
-          <Ionicons
-            name="chevron-back"
-            size={20}
-            color="rgba(255,255,255,0.8)"
-          />
-        </TouchableOpacity>
+      {/* Calendario semanal o navegación normal */}
+      {isWeekPeriod ? (
+        <WeeklyCalendar
+          selectedDay={selectedDay}
+          weekOffset={weekOffset}
+          onDayPress={handleDayPress}
+          onPrevWeek={handlePrevWeek}
+          onNextWeek={handleNextWeek}
+        />
+      ) : (
+        <View style={styles.navRow}>
+          <TouchableOpacity style={styles.navButton} onPress={goBack}>
+            <Ionicons
+              name="chevron-back"
+              size={20}
+              color="rgba(255,255,255,0.8)"
+            />
+          </TouchableOpacity>
+          <Text style={styles.label}>{displayLabel}</Text>
+          <TouchableOpacity
+            style={styles.navButton}
+            onPress={goForward}
+            disabled={isCurrentPeriod}
+          >
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color={
+                isCurrentPeriod
+                  ? "rgba(255,255,255,0.25)"
+                  : "rgba(255,255,255,0.8)"
+              }
+            />
+          </TouchableOpacity>
+        </View>
+      )}
 
-        <Text style={styles.label}>{periodLabel}</Text>
+      {/* Label día seleccionado */}
+      {selectedDay && isWeekPeriod && (
+        <Text style={styles.label}>{displayLabel}</Text>
+      )}
 
-        <TouchableOpacity
-          style={styles.navButton}
-          onPress={goForward}
-          disabled={isCurrentPeriod}
-        >
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color={
-              isCurrentPeriod
-                ? "rgba(255,255,255,0.25)"
-                : "rgba(255,255,255,0.8)"
-            }
-          />
-        </TouchableOpacity>
-      </View>
-
-      <Text style={styles.balance}>{formatCurrency(balance)}</Text>
+      <Text style={styles.balance}>{formatCurrency(displayBalance)}</Text>
       <View style={styles.divider} />
 
       <View style={styles.row}>
@@ -101,10 +141,10 @@ const CardBalance = () => {
           </View>
           <View style={styles.statInfo}>
             <Text style={styles.statLabel} numberOfLines={2}>
-              Ingresos {statLabel}
+              {selectedDay ? "Ingresos del día" : `Ingresos ${statLabel}`}
             </Text>
             <Text style={[styles.statAmount, { color: "#4AE588" }]}>
-              {formatCurrency(income)}
+              {formatCurrency(displayIncome)}
             </Text>
           </View>
         </View>
@@ -117,10 +157,10 @@ const CardBalance = () => {
           </View>
           <View style={styles.statInfo}>
             <Text style={styles.statLabel} numberOfLines={2}>
-              Gastos {statLabel}
+              {selectedDay ? "Gastos del día" : `Gastos ${statLabel}`}
             </Text>
             <Text style={[styles.statAmount, { color: "#FF6B76" }]}>
-              {formatCurrency(expense)}
+              {formatCurrency(displayExpense)}
             </Text>
           </View>
         </View>
@@ -149,6 +189,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   selecter: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 20,
@@ -176,18 +219,11 @@ const styles = StyleSheet.create({
   navButton: {
     padding: 2,
   },
-  navArrow: {
-    fontSize: 20,
-    color: "rgba(255,255,255,0.8)",
-    lineHeight: 22,
-  },
-  navArrowDisabled: {
-    color: "rgba(255,255,255,0.25)",
-  },
   label: {
     fontSize: 13,
     color: "rgba(255,255,255,0.75)",
     fontWeight: "500",
+    marginBottom: 8,
   },
   balance: {
     fontSize: 32,
@@ -218,11 +254,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
-  },
-  dotIcon: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "700",
   },
   statLabel: {
     fontSize: 12,

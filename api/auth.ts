@@ -1,5 +1,7 @@
 import {
   createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithCredential,
   signInWithEmailAndPassword,
   signOut,
   updateProfile,
@@ -10,12 +12,12 @@ import { auth } from "./firebase";
 export const registerUser = async (
   email: string,
   password: string,
-  name: string
+  name: string,
 ): Promise<UserCredential> => {
   const userCredential = await createUserWithEmailAndPassword(
     auth,
     email,
-    password
+    password,
   );
 
   await updateProfile(userCredential.user, {
@@ -27,11 +29,18 @@ export const registerUser = async (
 
 export const loginUser = (
   email: string,
-  password: string
+  password: string,
 ): Promise<UserCredential> => {
   return signInWithEmailAndPassword(auth, email, password);
 };
 
 export const logoutUser = (): Promise<void> => {
   return signOut(auth);
+};
+
+export const loginWithGoogle = async (
+  idToken: string,
+): Promise<UserCredential> => {
+  const credential = GoogleAuthProvider.credential(idToken);
+  return signInWithCredential(auth, credential);
 };

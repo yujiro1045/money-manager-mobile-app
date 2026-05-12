@@ -1,6 +1,10 @@
+import { IONICONS_CATEGORIES } from "@/components/ui/icons/ioniconsCategories";
 import { useTransactions } from "@/context/TransactionsContext";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import React, { useEffect, useState } from "react";
 import {
+  FlatList,
+  Modal,
   StyleSheet,
   Switch,
   Text,
@@ -14,10 +18,11 @@ import CustomModal from "../ui/CustomModal";
 type CategoryItem = {
   label: string;
   value: string;
+  icon?: string;
 };
 
 const DEFAULT_CATEGORIES: CategoryItem[] = [
-  { label: "General", value: "General" },
+  { label: "General", value: "General", icon: "home" },
 ];
 
 type Props = {
@@ -37,7 +42,9 @@ export default function CardTransaction({
   const [amount, setAmount] = useState("");
   const [newCategory, setNewCategory] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedIcon, setSelectedIcon] = useState<string>("home");
   const [openModal, setOpenModal] = useState(false);
+  const [showIconPicker, setShowIconPicker] = useState(false);
 
   useEffect(() => {
     if (defaultCategory) setSelectedCategory(defaultCategory);
@@ -51,7 +58,11 @@ export default function CardTransaction({
     ...DEFAULT_CATEGORIES,
     ...categories
       .filter((c) => c.name !== "General")
-      .map((c) => ({ label: c.name, value: c.name })),
+      .map((c) => ({
+        label: c.name,
+        value: c.name,
+        icon: c.icon || "home",
+      })),
   ];
 
   if (
@@ -61,14 +72,17 @@ export default function CardTransaction({
     dropdownCategories.unshift({
       label: defaultCategory,
       value: defaultCategory,
+      icon: "home",
     });
   }
 
   const handleCreateCategory = async () => {
     if (!newCategory.trim()) return;
-    await addCategory(newCategory.trim());
+    await addCategory(newCategory.trim(), selectedIcon);
     setSelectedCategory(newCategory.trim());
     setNewCategory("");
+    setSelectedIcon("home");
+    setShowIconPicker(false);
   };
 
   const handleAdd = async () => {
@@ -79,7 +93,7 @@ export default function CardTransaction({
         c.name.toLocaleLowerCase() === selectedCategory.toLocaleLowerCase(),
     );
     if (!exists) {
-      await addCategory(selectedCategory);
+      await addCategory(selectedCategory, selectedIcon);
     }
 
     await addTransaction({
@@ -108,6 +122,12 @@ export default function CardTransaction({
         </View>
 
         <View style={styles.inputCategory}>
+          <TouchableOpacity
+            style={[styles.iconPickerButton, { backgroundColor: "#F3F4F6" }]}
+            onPress={() => setShowIconPicker(true)}
+          >
+            <Ionicons name={selectedIcon as any} size={28} color="#3B82F6" />
+          </TouchableOpacity>
           <TextInput
             placeholder="Nueva categoría"
             placeholderTextColor="#000"
@@ -124,13 +144,80 @@ export default function CardTransaction({
         </View>
 
         <Dropdown
-          style={styles.dropdown}
+          style={[
+            styles.dropdown,
+            selectedCategory && styles.dropdownSelected,
+          ]}
           data={dropdownCategories}
           labelField="label"
           valueField="value"
           placeholder="Selecciona categoría"
           value={selectedCategory}
           onChange={(item) => setSelectedCategory(item.value)}
+          renderItem={(item) => (
+            <View
+              style={[
+                styles.dropdownItem,
+                selectedCategory === item.value && styles.dropdownItemActive,
+              ]}
+            >
+              <View
+                style={[
+                  styles.dropdownIconBox,
+                  {
+                    backgroundColor:
+                      selectedCategory === item.value ? "#E5F7FF" : "#F3F4F6",
+                  },
+                ]}
+              >
+                <Ionicons
+                  name={item.icon as any}
+                  size={20}
+                  color={selectedCategory === item.value ? "#3B82F6" : "#6B7280"}
+                />
+              </View>
+              <Text
+                style={[
+                  styles.dropdownLabel,
+                  selectedCategory === item.value &&
+                    styles.dropdownLabelActive,
+                ]}
+              >
+                {item.label}
+              </Text>
+            </View>
+          )}
+          renderLeftIcon={() =>
+            selectedCategory
+              ? (() => {
+                  const category = dropdownCategories.find(
+                    (c) => c.value === selectedCategory,
+                  );
+                  return (
+                    <View
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 10,
+                        backgroundColor: "#E5F7FF",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Ionicons
+                        name={category?.icon as any}
+                        size={20}
+                        color="#3B82F6"
+                      />
+                    </View>
+                  );
+                })()
+              : null
+          }
+          containerStyle={styles.dropdownContainer}
+          itemTextStyle={styles.dropdownItemText}
+          activeColor="#E5F7FF"
+          maxHeight={300}
         />
 
         <TextInput
@@ -146,6 +233,51 @@ export default function CardTransaction({
           <Text style={styles.buttonText}>Agregar</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Icon Picker Modal */}
+      <Modal
+        visible={showIconPicker}
+        transparent
+        animationType="slide"
+        statusBarTranslucent
+      >
+        <View style={styles.iconPickerContainer}>
+          <View style={styles.iconPickerContent}>
+            <View style={styles.iconPickerHeader}>
+              <Text style={styles.iconPickerTitle}>Selecciona un icono</Text>
+              <TouchableOpacity onPress={() => setShowIconPicker(false)}>
+                <Text style={styles.iconPickerClose}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <FlatList
+              data={IONICONS_CATEGORIES}
+              numColumns={5}
+              keyExtractor={(item, index) => index.toString()}
+              scrollEnabled={true}
+              contentContainerStyle={styles.iconGrid}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.iconOption,
+                    selectedIcon === item && styles.iconOptionSelected,
+                  ]}
+                  onPress={() => {
+                    setSelectedIcon(item);
+                    setShowIconPicker(false);
+                  }}
+                >
+                  <Ionicons
+                    name={item as any}
+                    size={24}
+                    color={selectedIcon === item ? "#3B82F6" : "#6B7280"}
+                  />
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
 
       <CustomModal
         visible={openModal}
@@ -195,6 +327,7 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 12,
     marginBottom: 12,
+    color: "#000",
   },
   inputTextColor: {
     color: "#000",
@@ -204,6 +337,51 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 12,
     marginBottom: 12,
+    borderWidth: 2,
+    borderColor: "#E5E7EB",
+  },
+  dropdownSelected: {
+    borderColor: "#3B82F6",
+    backgroundColor: "#FFFFFF",
+  },
+  dropdownContainer: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+  dropdownItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    gap: 12,
+  },
+  dropdownItemActive: {
+    backgroundColor: "#F0F7FF",
+  },
+  dropdownIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dropdownIcon: {
+    fontSize: 20,
+  },
+  dropdownLabel: {
+    fontSize: 14,
+    color: "#6B7280",
+    fontWeight: "500",
+  },
+  dropdownLabelActive: {
+    color: "#3B82F6",
+    fontWeight: "600",
+  },
+  dropdownItemText: {
+    fontSize: 14,
+    color: "#000",
   },
   createButton: {
     backgroundColor: "#10B981",
@@ -224,5 +402,69 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontWeight: "600",
+  },
+  iconPickerButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: "#E5E7EB",
+  },
+  iconPickerText: {
+    fontSize: 28,
+  },
+  iconPickerContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
+  },
+  iconPickerContent: {
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingTop: 16,
+    paddingHorizontal: 16,
+    paddingBottom: 24,
+    maxHeight: "80%",
+  },
+  iconPickerHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  iconPickerTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#000",
+  },
+  iconPickerClose: {
+    fontSize: 24,
+    color: "#999",
+  },
+  iconGrid: {
+    gap: 12,
+    paddingBottom: 20,
+    paddingHorizontal: 8,
+  },
+  iconOption: {
+    flex: 1,
+    aspectRatio: 1,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F3F4F6",
+    borderWidth: 2,
+    borderColor: "transparent",
+    minWidth: "18%",
+  },
+  iconOptionSelected: {
+    backgroundColor: "#E5F7FF",
+    borderColor: "#3B82F6",
+  },
+  iconOptionText: {
+    fontSize: 32,
   },
 });

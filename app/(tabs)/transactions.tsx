@@ -1,5 +1,6 @@
 import CustomModal from "@/components/ui/CustomModal";
 import { BACKGROUND, CARD, MUTED, PRIMARY, TEXT } from "@/constants/theme2";
+import { useTransactions } from "@/context/TransactionsContext";
 import {
   Transaction,
   TYPE_FILTERS,
@@ -46,6 +47,19 @@ export default function Transactions() {
     closeSuccess,
   } = useTransactionList();
 
+  const { categories } = useTransactions();
+
+  function getCategoryInitial(category: string): string {
+    return category?.charAt(0).toUpperCase() ?? "?";
+  }
+
+  const getCategoryIcon = (categoryName: string): string => {
+    const category = categories.find(
+      (c) => c.name.toLowerCase() === categoryName.toLowerCase(),
+    );
+    return category?.icon || "";
+  };
+
   const renderRightActions = (item: Transaction) => (
     <TouchableOpacity
       style={styles.deleteAction}
@@ -58,6 +72,7 @@ export default function Transactions() {
 
   const renderItem = ({ item }: { item: Transaction }) => {
     const isExpense = item.type === "expense";
+    const categoryIcon = getCategoryIcon(item.category);
 
     return (
       <Swipeable
@@ -66,12 +81,28 @@ export default function Transactions() {
         friction={2}
       >
         <View style={styles.row}>
-          <View style={styles.iconContainer}>
-            <Ionicons
-              name={isExpense ? "arrow-down" : "arrow-up"}
-              size={20}
-              color={isExpense ? "#C93545" : "#21A179"}
-            />
+          <View
+            style={[
+              styles.iconContainer,
+              { backgroundColor: isExpense ? "#FFE5E5" : "#E5FFE9" },
+            ]}
+          >
+            {categoryIcon ? (
+              <Ionicons
+                name={categoryIcon as any}
+                size={20}
+                color={isExpense ? "#E53935" : "#2E7D32"}
+              />
+            ) : (
+              <Text
+                style={[
+                  styles.categoryIcon,
+                  { color: isExpense ? "#E53935" : "#2E7D32" },
+                ]}
+              >
+                {getCategoryInitial(item.category)}
+              </Text>
+            )}
           </View>
 
           <View style={{ flex: 1 }}>
@@ -269,6 +300,11 @@ const styles = StyleSheet.create({
     marginRight: 12,
     alignItems: "center",
     justifyContent: "center",
+  },
+  categoryIcon: {
+    fontSize: 24,
+    fontWeight: "700",
+    textAlign: "center",
   },
   txTitle: {
     fontSize: 15,
