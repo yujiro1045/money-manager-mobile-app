@@ -1,5 +1,6 @@
 import React, { ReactNode, useState } from "react";
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Modal, Pressable, StyleSheet, Text, View, ScrollView } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 type SelectSize = "small" | "medium" | "large";
 
@@ -38,14 +39,34 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         <Text style={[styles.text, textSizes[size]]}>
           {value ?? placeholder}
         </Text>
+        <Ionicons
+          name={open ? "chevron-up" : "chevron-down"}
+          size={20}
+          color="#6B6FE0"
+        />
       </Pressable>
 
       <Modal transparent visible={open} animationType="fade">
         <Pressable style={styles.overlay} onPress={() => setOpen(false)}>
-          <View style={styles.modal}>
-            {React.Children.map(children, (child) => (
-              <Pressable onPress={handleSelect}>{child}</Pressable>
-            ))}
+          <View style={styles.modalContainer}>
+            <View style={styles.modal}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>{placeholder}</Text>
+              </View>
+              <ScrollView style={styles.optionsList} showsVerticalScrollIndicator={false}>
+                {React.Children.map(children, (child) => {
+                  if (React.isValidElement(child)) {
+                    return React.cloneElement(child, {
+                      onPress: () => {
+                        child.props.onPress?.();
+                        handleSelect();
+                      },
+                    } as any);
+                  }
+                  return child;
+                })}
+              </ScrollView>
+            </View>
           </View>
         </Pressable>
       </Modal>
@@ -58,53 +79,84 @@ export default CustomSelect;
 const styles = StyleSheet.create({
   base: {
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#D1D5DB",
+    borderWidth: 1.5,
+    borderColor: "#E5E7EB",
     backgroundColor: "#FFFFFF",
-    justifyContent: "center",
-    shadowColor: "#000",
+    justifyContent: "space-between",
+    alignItems: "center",
+    flexDirection: "row",
+    paddingHorizontal: 12,
+    shadowColor: "#6B6FE0",
     shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowRadius: 8,
+    elevation: 3,
   },
 
   pressed: {
-    opacity: 0.9,
+    opacity: 0.85,
+    borderColor: "#6B6FE0",
   },
 
   text: {
-    color: "#374151", // gray-700
+    color: "#1F2937",
+    fontWeight: "600",
+    flex: 1,
   },
 
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    justifyContent: "center",
-    padding: 20,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "flex-end",
+  },
+
+  modalContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 20,
+    justifyContent: "flex-end",
   },
 
   modal: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    padding: 12,
+    borderRadius: 24,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+
+  modalHeader: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F3F4F6",
+    backgroundColor: "#F9FAFB",
+  },
+
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#1F2937",
+  },
+
+  optionsList: {
+    maxHeight: 300,
+    flex: 0,
   },
 });
 
 const sizeStyles = StyleSheet.create({
   small: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    width: "40%",
+    paddingVertical: 10,
+    width: "48%",
   },
   medium: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    width: "50%",
+    paddingVertical: 12,
+    width: "60%",
   },
   large: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    width: "70%",
+    paddingVertical: 14,
+    width: "75%",
   },
 });
 
@@ -113,9 +165,9 @@ const textSizes = StyleSheet.create({
     fontSize: 14,
   },
   medium: {
-    fontSize: 16,
+    fontSize: 15,
   },
   large: {
-    fontSize: 18,
+    fontSize: 16,
   },
 });

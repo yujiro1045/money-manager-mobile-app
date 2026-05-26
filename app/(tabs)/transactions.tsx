@@ -1,4 +1,5 @@
 import CustomModal from "@/components/ui/CustomModal";
+import EditTransactionModal from "@/components/ui/EditTransactionModal";
 import { BACKGROUND, CARD, MUTED, PRIMARY, TEXT } from "@/constants/theme2";
 import { useTransactions } from "@/context/TransactionsContext";
 import {
@@ -7,6 +8,7 @@ import {
   useTransactionList,
 } from "@/hooks/useTrasactionList";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useState } from "react";
 import {
   FlatList,
   StyleSheet,
@@ -47,7 +49,27 @@ export default function Transactions() {
     closeSuccess,
   } = useTransactionList();
 
-  const { categories } = useTransactions();
+  const { categories, updateTransaction } = useTransactions();
+  const [selectedTxForEdit, setSelectedTxForEdit] =
+    useState<Transaction | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  const handleEditTransaction = (tx: Transaction) => {
+    setSelectedTxForEdit(tx);
+    setShowEditModal(true);
+  };
+
+  const handleUpdateTransaction = async (
+    id: string,
+    data: { amount: number; category: string; type: "income" | "expense" },
+  ) => {
+    await updateTransaction(id, data);
+  };
+
+  const handleEditSuccess = () => {
+    setShowEditModal(false);
+    setSelectedTxForEdit(null);
+  };
 
   function getCategoryInitial(category: string): string {
     return category?.charAt(0).toUpperCase() ?? "?";
@@ -70,6 +92,16 @@ export default function Transactions() {
     </TouchableOpacity>
   );
 
+  const renderLeftActions = (item: Transaction) => (
+    <TouchableOpacity
+      style={styles.editAction}
+      onPress={() => handleEditTransaction(item)}
+    >
+      <Ionicons name="pencil-outline" size={22} color="#FFFFFF" />
+      <Text style={styles.editActionText}>Editar</Text>
+    </TouchableOpacity>
+  );
+
   const renderItem = ({ item }: { item: Transaction }) => {
     const isExpense = item.type === "expense";
     const categoryIcon = getCategoryIcon(item.category);
@@ -77,7 +109,9 @@ export default function Transactions() {
     return (
       <Swipeable
         renderRightActions={() => renderRightActions(item)}
+        renderLeftActions={() => renderLeftActions(item)}
         overshootRight={false}
+        overshootLeft={false}
         friction={2}
       >
         <View style={styles.row}>
@@ -118,6 +152,8 @@ export default function Transactions() {
               styles.amount,
               isExpense ? styles.negative : styles.positive,
             ]}
+            numberOfLines={1}
+            adjustsFontSizeToFit
           >
             {isExpense
               ? `- $${item.amount.toLocaleString("es-CO")}`
@@ -213,6 +249,14 @@ export default function Transactions() {
           onConfirm={closeSuccess}
         />
       )}
+
+      <EditTransactionModal
+        visible={showEditModal}
+        transaction={selectedTxForEdit}
+        onClose={() => setShowEditModal(false)}
+        onSuccess={handleEditSuccess}
+        onUpdate={handleUpdateTransaction}
+      />
     </SafeAreaView>
   );
 }
@@ -324,6 +368,8 @@ const styles = StyleSheet.create({
   amount: {
     fontSize: 16,
     fontWeight: "700",
+    maxWidth: 120,
+    marginLeft: 8,
   },
   negative: { color: "#C93545" },
   positive: { color: "#21A179" },
@@ -343,6 +389,20 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   deleteActionText: {
+    color: "#FFFFFF",
+    fontSize: 11,
+    fontWeight: "600",
+  },
+  editAction: {
+    backgroundColor: "#3B82F6",
+    justifyContent: "center",
+    alignItems: "center",
+    width: 80,
+    borderRadius: 16,
+    marginBottom: 12,
+    gap: 4,
+  },
+  editActionText: {
     color: "#FFFFFF",
     fontSize: 11,
     fontWeight: "600",

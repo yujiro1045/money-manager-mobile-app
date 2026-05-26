@@ -1,5 +1,5 @@
 import { useQuickCategories } from "@/hooks/useQuickCategories";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import {
   Modal,
   ScrollView,
@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 
+import { PRIMARY_COLOR } from "@/constants/theme2";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import CardTransaction from "../cards/CardTransaction";
 
@@ -42,7 +43,7 @@ const QuickCategories = () => {
           { backgroundColor: cat.type === "expense" ? "#FFF0F0" : "#F0FFF4" },
         ]}
       >
-        <MaterialCommunityIcons
+        <Ionicons
           name={cat.icon as any}
           size={26}
           color={cat.type === "expense" ? "#E53935" : "#2E7D32"}
@@ -73,6 +74,7 @@ const QuickCategories = () => {
   return (
     <>
       <View style={styles.container}>
+        <Text style={styles.titleCategory}>Categorias rapidas</Text>
         <View style={styles.row}>
           {visibleCategories
             .slice(0, 4)
@@ -85,11 +87,7 @@ const QuickCategories = () => {
             .map((cat, i) => renderCategory(cat, i + 4))}
           <TouchableOpacity style={styles.item} onPress={openAll}>
             <View style={[styles.iconBox, { backgroundColor: "#F3F4F6" }]}>
-              <MaterialCommunityIcons
-                name="dots-horizontal"
-                size={26}
-                color="#6B7280"
-              />
+              <Ionicons name="ellipsis-horizontal" size={26} color="#6B7280" />
             </View>
             <Text style={styles.itemLabel}>Ver todo</Text>
           </TouchableOpacity>
@@ -109,11 +107,7 @@ const QuickCategories = () => {
             <View style={styles.sheetHeader}>
               <Text style={styles.sheetTitle}>Todas las categorías</Text>
               <TouchableOpacity onPress={closeAll} style={styles.closeButton}>
-                <MaterialCommunityIcons
-                  name="close"
-                  size={24}
-                  color="#374151"
-                />
+                <Ionicons name="close" size={24} color="#374151" />
               </TouchableOpacity>
             </View>
 
@@ -158,6 +152,7 @@ const QuickCategories = () => {
               <CardTransaction
                 defaultCategory={selectedCat?.label}
                 defaultType={selectedCat?.type}
+                defaultIcon={selectedCat?.icon}
                 onSubmit={handleSubmit}
               />
             </KeyboardAwareScrollView>
@@ -182,6 +177,12 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
     elevation: 4,
+  },
+  titleCategory: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: PRIMARY_COLOR,
+    marginBottom: 12,
   },
   row: {
     flexDirection: "row",

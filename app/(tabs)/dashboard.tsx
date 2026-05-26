@@ -1,5 +1,7 @@
+import CustomSelect from "@/components/ui/CustomSelect";
 import { BACKGROUND, MUTED, PRIMARY, TEXT } from "@/constants/theme2";
 import { DashboardPeriod, useDashboard } from "@/hooks/useDasboard";
+import dayjs from "dayjs";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import {
@@ -10,7 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { BarChart, LineChart, PieChart } from "react-native-gifted-charts";
+import { BarChart, PieChart } from "react-native-gifted-charts";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -39,15 +41,21 @@ export default function DashboardScreen() {
     healthScore,
     remainingBudget,
     balanceLine,
+    expenseLine,
     selectedCategory,
     allCategories,
     setSelectedCategory,
+    selectedYear,
+    setSelectedYear,
+    selectedMonth,
+    setSelectedMonth,
   } = useDashboard();
 
-  const barData = last6.flatMap((m) => [
-    { value: m.income, label: m.label, frontColor: "#4AE588", spacing: 4 },
-    { value: m.expense, frontColor: "#FF6B76", spacing: 18 },
-  ]);
+  const [selectedTrendMonth, setSelectedTrendMonth] = React.useState<number>(
+    last6.length - 1,
+  );
+  const currentTrendData = balanceLine[selectedTrendMonth];
+  const currentExpenseData = expenseLine[selectedTrendMonth];
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -56,7 +64,6 @@ export default function DashboardScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.screenTitle}>Dashboard</Text>
-
         <View style={styles.pillsRow}>
           {PILLS.map((pill) => (
             <TouchableOpacity
@@ -75,7 +82,6 @@ export default function DashboardScreen() {
             </TouchableOpacity>
           ))}
         </View>
-
         <View style={styles.summaryRow}>
           <View style={[styles.summaryCard, { borderLeftColor: "#4AE588" }]}>
             <Text style={styles.summaryLabel}>Ingresos</Text>
@@ -90,7 +96,6 @@ export default function DashboardScreen() {
             </Text>
           </View>
         </View>
-
         <LinearGradient
           colors={["#1E1F8E", "#3B3DBF", "#6B6FE0"]}
           start={{ x: 0, y: 0 }}
@@ -104,7 +109,6 @@ export default function DashboardScreen() {
             </View>
             <Text style={styles.healthScore}>{healthScore.score}</Text>
           </View>
-
           <View style={styles.progressBg}>
             <View
               style={[
@@ -116,7 +120,6 @@ export default function DashboardScreen() {
               ]}
             />
           </View>
-
           <View style={styles.healthFooter}>
             <Text style={styles.healthHint}>
               {current.income === 0
@@ -127,77 +130,174 @@ export default function DashboardScreen() {
             </Text>
           </View>
         </LinearGradient>
-
         <View style={styles.chartCard}>
-          <Text style={styles.chartTitle}>Ingresos vs Gastos</Text>
-          <View style={styles.legend}>
-            <View style={styles.legendItem}>
-              <View
-                style={[styles.legendDot, { backgroundColor: "#4AE588" }]}
-              />
-              <Text style={styles.legendText}>Ingresos</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View
-                style={[styles.legendDot, { backgroundColor: "#FF6B76" }]}
-              />
-              <Text style={styles.legendText}>Gastos</Text>
-            </View>
+          <Text style={styles.chartTitle}>Tendencia de ingresos y gastos</Text>
+          <View style={styles.trendMonthSelector}>
+            {last6.map((period, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.trendMonthButton,
+                  selectedTrendMonth === index && styles.trendMonthButtonActive,
+                ]}
+                onPress={() => setSelectedTrendMonth(index)}
+              >
+                <Text
+                  style={[
+                    styles.trendMonthButtonText,
+                    selectedTrendMonth === index &&
+                      styles.trendMonthButtonTextActive,
+                  ]}
+                >
+                  {period.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
-          {barData.length > 0 ? (
-            <BarChart
-              data={barData}
-              width={CHART_WIDTH}
-              height={180}
-              barWidth={18}
-              noOfSections={4}
-              barBorderRadius={6}
-              yAxisTextStyle={{ color: MUTED, fontSize: 10 }}
-              xAxisLabelTextStyle={{ color: MUTED, fontSize: 10 }}
-              hideRules
-              hideAxesAndRules={false}
-              yAxisColor="transparent"
-              xAxisColor="#E5E7EB"
-              isAnimated
-            />
-          ) : (
-            <Text style={styles.emptyText}>Sin datos para este periodo</Text>
-          )}
+          {currentTrendData && currentExpenseData ? (
+            (currentTrendData.value ?? 0) > 0 ||
+            (currentExpenseData.value ?? 0) > 0 ? (
+              <>
+                <View style={styles.trendChartContainer}>
+                  <BarChart
+                    data={[
+                      {
+                        value: currentTrendData.value ?? 0,
+                        label: "Ingresos",
+                        frontColor: "#4AE588",
+                      },
+                      {
+                        value: currentExpenseData.value ?? 0,
+                        label: "Gastos",
+                        frontColor: "#FF6B76",
+                      },
+                    ]}
+                    width={CHART_WIDTH}
+                    height={200}
+                    barWidth={40}
+                    spacing={50}
+                    noOfSections={4}
+                    yAxisTextStyle={{ color: MUTED, fontSize: 12 }}
+                    xAxisLabelTextStyle={{
+                      color: MUTED,
+                      fontSize: 12,
+                      fontWeight: "bold",
+                    }}
+                    hideRules
+                    yAxisColor="transparent"
+                    xAxisColor="#E5E7EB"
+                    isAnimated
+                    barBorderRadius={8}
+                  />
+                </View>
+                <View style={styles.trendIndicatorContainer}>
+                  <View style={styles.trendIndicatorItem}>
+                    <View
+                      style={[
+                        styles.trendIndicatorDot,
+                        { backgroundColor: "#4AE588" },
+                      ]}
+                    />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.trendIndicatorLabel}>Ingresos</Text>
+                      <Text style={styles.trendIndicatorValue}>
+                        {formatCurrency(currentTrendData.value ?? 0)}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.trendIndicatorItem}>
+                    <View
+                      style={[
+                        styles.trendIndicatorDot,
+                        { backgroundColor: "#FF6B76" },
+                      ]}
+                    />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.trendIndicatorLabel}>Gastos</Text>
+                      <Text style={styles.trendIndicatorValue}>
+                        {formatCurrency(currentExpenseData.value ?? 0)}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+                <View
+                  style={[
+                    styles.trendStatusBadge,
+                    {
+                      backgroundColor:
+                        (currentTrendData.value ?? 0) >
+                        (currentExpenseData.value ?? 0)
+                          ? "#D1F5E8"
+                          : "#FFE5E8",
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.trendStatusText,
+                      {
+                        color:
+                          (currentTrendData.value ?? 0) >
+                          (currentExpenseData.value ?? 0)
+                            ? "#1DB954"
+                            : "#FF6B76",
+                      },
+                    ]}
+                  >
+                    {(currentTrendData.value ?? 0) >
+                    (currentExpenseData.value ?? 0)
+                      ? "Tendencia Positiva"
+                      : "Tendencia Negativa"}
+                  </Text>
+                </View>
+              </>
+            ) : (
+              <Text style={styles.emptyText}>
+                Sin movimientos en este período
+              </Text>
+            )
+          ) : null}
         </View>
-
         <View style={styles.chartCard}>
-          <Text style={styles.chartTitle}>Tendencia del balance</Text>
-          {balanceLine.some((p) => p.value !== 0) ? (
-            <LineChart
-              data={balanceLine}
-              width={CHART_WIDTH}
-              height={160}
-              color="#6B6FE0"
-              thickness={2}
-              noOfSections={4}
-              curved
-              areaChart
-              startFillColor="#6B6FE0"
-              endFillColor="transparent"
-              startOpacity={0.2}
-              endOpacity={0}
-              yAxisTextStyle={{ color: MUTED, fontSize: 10 }}
-              xAxisLabelTextStyle={{ color: MUTED, fontSize: 10 }}
-              hideRules
-              yAxisColor="transparent"
-              xAxisColor="#E5E7EB"
-              dataPointsColor="#6B6FE0"
-              isAnimated
-              backgroundColor="transparent"
-            />
-          ) : (
-            <Text style={styles.emptyText}>Sin datos para este periodo</Text>
-          )}
-        </View>
-
-        {categoryDistribution.length > 0 && (
-          <View style={styles.chartCard}>
-            <Text style={styles.chartTitle}>Distribución de gastos</Text>
+          <Text style={styles.chartTitle}>Distribución de gastos</Text>
+          <View style={styles.filtersRow}>
+            <CustomSelect
+              size="small"
+              value={dayjs().month(selectedMonth).format("MMMM")}
+              placeholder="Seleccionar mes"
+            >
+              {Array.from({ length: 12 }, (_, i) => (
+                <TouchableOpacity
+                  key={i}
+                  onPress={() => setSelectedMonth(i)}
+                  style={styles.selectOption}
+                >
+                  <Text style={styles.selectOptionText}>
+                    {dayjs().month(i).format("MMMM")}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </CustomSelect>
+            <CustomSelect
+              size="small"
+              value={selectedYear.toString()}
+              placeholder="Seleccionar año"
+            >
+              {Array.from({ length: dayjs().year() - 2024 + 1 }, (_, i) => {
+                const year = dayjs().year() - i;
+                return (
+                  <TouchableOpacity
+                    key={year}
+                    onPress={() => setSelectedYear(year)}
+                    style={styles.selectOption}
+                  >
+                    <Text style={styles.selectOptionText}>{year}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </CustomSelect>
+          </View>
+          {categoryDistribution.length > 0 ? (
             <View style={styles.pieContainer}>
               <PieChart
                 data={categoryDistribution}
@@ -222,7 +322,6 @@ export default function DashboardScreen() {
                   </View>
                 )}
               />
-
               <View style={styles.pieLegend}>
                 {allCategories.map((cat, i) => {
                   const isSelected = selectedCategory === cat.label;
@@ -240,7 +339,6 @@ export default function DashboardScreen() {
                     >
                       <View
                         style={[
-                          styles.legendDot,
                           {
                             backgroundColor: cat.color,
                             opacity: isFiltered ? 0.3 : 1,
@@ -269,46 +367,41 @@ export default function DashboardScreen() {
                 })}
               </View>
             </View>
-
-            {selectedCategory && (
-              <TouchableOpacity
-                style={styles.clearButton}
-                onPress={() => setSelectedCategory(null)}
-              >
-                <Text style={styles.clearButtonText}>Ver todas</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
+          ) : (
+            <Text
+              style={[
+                styles.emptyText,
+                { textAlign: "center", paddingVertical: 40 },
+              ]}
+            >
+              No hubo gastos en {dayjs().month(selectedMonth).format("MMMM")} de{" "}
+              {selectedYear}
+            </Text>
+          )}
+          {selectedCategory && (
+            <TouchableOpacity
+              style={styles.clearButton}
+              onPress={() => setSelectedCategory(null)}
+            >
+              <Text style={styles.clearButtonText}>Ver todas</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: BACKGROUND,
-  },
-
+  safe: { flex: 1, backgroundColor: BACKGROUND },
   container: {
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 100,
     gap: 14,
   },
-
-  screenTitle: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: TEXT,
-  },
-
-  // Pills
-  pillsRow: {
-    flexDirection: "row",
-    gap: 8,
-  },
+  screenTitle: { fontSize: 24, fontWeight: "700", color: TEXT },
+  pillsRow: { flexDirection: "row", gap: 8 },
   pill: {
     paddingHorizontal: 16,
     paddingVertical: 7,
@@ -317,23 +410,10 @@ const styles = StyleSheet.create({
     borderColor: "#D1D5DB",
     backgroundColor: "#FFFFFF",
   },
-  pillActive: {
-    backgroundColor: PRIMARY,
-    borderColor: PRIMARY,
-  },
-  pillText: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: MUTED,
-  },
-  pillTextActive: {
-    color: "#FFFFFF",
-  },
-
-  summaryRow: {
-    flexDirection: "row",
-    gap: 12,
-  },
+  pillActive: { backgroundColor: PRIMARY, borderColor: PRIMARY },
+  pillText: { fontSize: 13, fontWeight: "600", color: MUTED },
+  pillTextActive: { color: "#FFFFFF" },
+  summaryRow: { flexDirection: "row", gap: 12 },
   summaryCard: {
     flex: 1,
     backgroundColor: "#FFFFFF",
@@ -345,16 +425,8 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-  summaryLabel: {
-    fontSize: 12,
-    color: MUTED,
-    marginBottom: 4,
-  },
-  summaryValue: {
-    fontSize: 16,
-    fontWeight: "700",
-  },
-
+  summaryLabel: { fontSize: 12, color: MUTED, marginBottom: 4 },
+  summaryValue: { fontSize: 16, fontWeight: "700" },
   healthCard: {
     borderRadius: 20,
     padding: 20,
@@ -392,17 +464,13 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     overflow: "hidden",
   },
-  progressFill: {
-    height: 8,
-    borderRadius: 4,
-  },
+  progressFill: { height: 8, borderRadius: 4 },
   healthFooter: {},
   healthHint: {
     fontSize: 12,
     color: "rgba(255,255,255,0.75)",
     fontWeight: "500",
   },
-
   chartCard: {
     backgroundColor: "#FFFFFF",
     borderRadius: 20,
@@ -413,77 +481,21 @@ const styles = StyleSheet.create({
     elevation: 3,
     gap: 12,
   },
-
-  chartTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: TEXT,
-  },
-  legend: {
-    flexDirection: "row",
-    gap: 16,
-  },
-  legendItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  legendDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  legendText: {
-    fontSize: 12,
-    color: MUTED,
-  },
+  chartTitle: { fontSize: 16, fontWeight: "700", color: TEXT },
   emptyText: {
     textAlign: "center",
     color: MUTED,
     fontSize: 13,
     paddingVertical: 20,
   },
-
-  pieContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 16,
-  },
-  pieCenter: {
-    alignItems: "center",
-    width: 90,
-    paddingHorizontal: 2,
-    //borderWidth: 1,
-    //borderColor: "red",
-  },
-  pieCenterLabel: {
-    fontSize: 11,
-    color: MUTED,
-  },
-  pieCenterValue: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: TEXT,
-  },
-  pieLegend: {
-    flex: 1,
-    gap: 6,
-  },
-  pieLegendItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  pieLegendLabel: {
-    flex: 1,
-    fontSize: 11,
-    color: TEXT,
-  },
-  pieLegendPct: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: MUTED,
-  },
+  pieContainer: { flexDirection: "row", alignItems: "center", gap: 16 },
+  pieCenter: { alignItems: "center", width: 90, paddingHorizontal: 2 },
+  pieCenterLabel: { fontSize: 11, color: MUTED },
+  pieCenterValue: { fontSize: 12, fontWeight: "700", color: TEXT },
+  pieLegend: { flex: 1, gap: 6 },
+  pieLegendItem: { flexDirection: "row", alignItems: "center", gap: 6 },
+  pieLegendLabel: { flex: 1, fontSize: 11, color: TEXT },
+  pieLegendPct: { fontSize: 11, fontWeight: "700", color: MUTED },
   pieLegendItemSelected: {
     backgroundColor: "#F0F0FF",
     borderRadius: 8,
@@ -497,9 +509,72 @@ const styles = StyleSheet.create({
     backgroundColor: "#F0F0FF",
     marginTop: 4,
   },
-  clearButtonText: {
-    fontSize: 12,
-    color: PRIMARY,
-    fontWeight: "600",
+  clearButtonText: { fontSize: 12, color: PRIMARY, fontWeight: "600" },
+  filtersRow: {
+    flexDirection: "row",
+    gap: 12,
+    justifyContent: "space-between",
+    marginBottom: 4,
   },
+  selectOption: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 0.5,
+    borderBottomColor: "#E5E7EB",
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  selectOptionText: { fontSize: 15, color: TEXT, fontWeight: "500" },
+  trendMonthSelector: {
+    flexDirection: "row",
+    gap: 8,
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  trendMonthButton: {
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: "#E5E7EB",
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+  },
+  trendMonthButtonActive: { backgroundColor: PRIMARY, borderColor: PRIMARY },
+  trendMonthButtonText: { fontSize: 12, fontWeight: "600", color: MUTED },
+  trendMonthButtonTextActive: { color: "#FFFFFF" },
+  trendChartContainer: { marginVertical: 12, alignItems: "center" },
+  trendIndicatorContainer: {
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 12,
+    marginBottom: 12,
+  },
+  trendIndicatorItem: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "#F9FAFB",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  trendIndicatorDot: { width: 12, height: 12, borderRadius: 6 },
+  trendIndicatorLabel: { fontSize: 10, color: MUTED, fontWeight: "500" },
+  trendIndicatorValue: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: TEXT,
+    marginTop: 2,
+  },
+  trendStatusBadge: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 4,
+  },
+  trendStatusText: { fontSize: 13, fontWeight: "700" },
 });

@@ -8,6 +8,7 @@ import {
   orderBy,
   query,
   serverTimestamp,
+  updateDoc,
 } from "firebase/firestore";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useAuth } from "./AuthContext";
@@ -39,6 +40,7 @@ type TxContextType = {
   loading: boolean;
   addTransaction: (tx: CreateTxInput) => Promise<void>;
   removeTransaction: (id: string) => Promise<void>;
+  updateTransaction: (id: string, tx: Partial<CreateTxInput>) => Promise<void>;
   addCategory: (name: string, icon?: string) => Promise<void>;
 };
 
@@ -48,6 +50,7 @@ const TransactionsContext = createContext<TxContextType>({
   loading: true,
   addTransaction: async () => {},
   removeTransaction: async () => {},
+  updateTransaction: async () => {},
   addCategory: async () => {},
 });
 
@@ -113,12 +116,37 @@ export const TransactionsProvider = ({
     await deleteDoc(doc(db, "users", user.uid, "transactions", id));
   };
 
+  const updateTransaction = async (id: string, tx: Partial<CreateTxInput>) => {
+    if (!user) return;
+    const updateData: any = {};
+    if (tx.type !== undefined) updateData.type = tx.type;
+    if (tx.amount !== undefined) updateData.amount = tx.amount;
+    if (tx.category !== undefined) updateData.category = tx.category;
+
+    if (Object.keys(updateData).length > 0) {
+      await updateDoc(
+        doc(db, "users", user.uid, "transactions", id),
+        updateData,
+      );
+    }
+  };
+
   const addCategory = async (name: string, icon?: string) => {
     if (!user) return;
-    const exists = categories.some(
+    const existingCategory = categories.find(
       (c) => c.name.toLowerCase() === name.trim().toLowerCase(),
     );
-    if (exists) return;
+
+    if (existingCategory) {
+      if (icon && existingCategory.icon !== icon) {
+        await updateDoc(
+          doc(db, "users", user.uid, "categories", existingCategory.id),
+          { icon },
+        );
+      }
+      return;
+    }
+
     await addDoc(collection(db, "users", user.uid, "categories"), {
       name: name.trim(),
       icon: icon || "🏷️",
@@ -134,6 +162,7 @@ export const TransactionsProvider = ({
         loading,
         addTransaction,
         removeTransaction,
+        updateTransaction,
         addCategory,
       }}
     >

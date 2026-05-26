@@ -1,5 +1,6 @@
 import { PRIMARY_COLOR, SECONDARY_COLOR } from "@/constants/theme2";
 import { Transaction, useTransactions } from "@/context/TransactionsContext";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import React from "react";
 import {
   ActivityIndicator,
@@ -8,7 +9,6 @@ import {
   Text,
   View,
 } from "react-native";
-import Ionicons from "@expo/vector-icons/Ionicons";
 
 const MAX_RECENT = 5;
 
@@ -27,7 +27,10 @@ function getCategoryInitial(category: string): string {
   return category?.charAt(0).toUpperCase() ?? "?";
 }
 
-const TransactionItem: React.FC<{ item: Transaction; categoryIcon?: string }> = ({ item, categoryIcon }) => {
+const TransactionItem: React.FC<{
+  item: Transaction;
+  categoryIcon?: string;
+}> = ({ item, categoryIcon }) => {
   const isExpense = item.type === "expense";
 
   return (
@@ -63,6 +66,8 @@ const TransactionItem: React.FC<{ item: Transaction; categoryIcon?: string }> = 
 
       <Text
         style={[styles.amount, { color: isExpense ? "#E53935" : "#2E7D32" }]}
+        numberOfLines={1}
+        adjustsFontSizeToFit
       >
         {isExpense ? "-" : "+"} ${item.amount.toLocaleString("es-CO")}
       </Text>
@@ -74,11 +79,11 @@ const RecentTransactions: React.FC = () => {
   const { transactions, loading, categories } = useTransactions();
   const recent = transactions.slice(0, MAX_RECENT);
 
-  const getCategoryIcon = (categoryName: string): string | null => {
+  const getCategoryIcon = (categoryName: string): string | undefined => {
     const category = categories.find(
-      (c) => c.name.toLowerCase() === categoryName.toLowerCase()
+      (c) => c.name.toLowerCase() === categoryName.toLowerCase(),
     );
-    return category?.icon || null;
+    return category?.icon;
   };
 
   return (
@@ -163,6 +168,8 @@ const styles = StyleSheet.create({
   amount: {
     fontSize: 15,
     fontWeight: "700",
+    maxWidth: 120,
+    marginLeft: 8,
   },
 
   separator: {

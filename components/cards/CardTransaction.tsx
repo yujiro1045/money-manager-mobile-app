@@ -1,4 +1,3 @@
-import { IONICONS_CATEGORIES } from "@/components/ui/icons/ioniconsCategories";
 import { useTransactions } from "@/context/TransactionsContext";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import React, { useEffect, useState } from "react";
@@ -14,6 +13,7 @@ import {
 } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
 import CustomModal from "../ui/CustomModal";
+import { IONICONS_CATEGORIES } from "../ui/icons/ioniconsCategories";
 
 type CategoryItem = {
   label: string;
@@ -25,15 +25,19 @@ const DEFAULT_CATEGORIES: CategoryItem[] = [
   { label: "General", value: "General", icon: "home" },
 ];
 
+const ICON_LIST = IONICONS_CATEGORIES;
+
 type Props = {
   onSubmit: VoidFunction;
   defaultCategory?: string;
   defaultType?: "income" | "expense";
+  defaultIcon?: string;
 };
 
 export default function CardTransaction({
   defaultCategory,
   defaultType,
+  defaultIcon,
   onSubmit,
 }: Props) {
   const { addCategory, categories, addTransaction } = useTransactions();
@@ -65,15 +69,13 @@ export default function CardTransaction({
       })),
   ];
 
-  if (
-    defaultCategory &&
-    !dropdownCategories.some((c) => c.value === defaultCategory)
-  ) {
-    dropdownCategories.unshift({
-      label: defaultCategory,
-      value: defaultCategory,
-      icon: "home",
-    });
+  if (defaultCategory && defaultIcon) {
+    const existingIndex = dropdownCategories.findIndex(
+      (c) => c.value === defaultCategory,
+    );
+    if (existingIndex >= 0) {
+      dropdownCategories[existingIndex].icon = defaultIcon;
+    }
   }
 
   const handleCreateCategory = async () => {
@@ -85,20 +87,47 @@ export default function CardTransaction({
     setShowIconPicker(false);
   };
 
-  const handleAdd = async () => {
-    if (!amount || isNaN(Number(amount)) || !selectedCategory) return;
+  const handleAmountChange = (text: string) => {
+    const cleanedValue = text.replace(/\./g, "");
 
-    const exists = categories.some(
-      (c) =>
-        c.name.toLocaleLowerCase() === selectedCategory.toLocaleLowerCase(),
-    );
-    if (!exists) {
-      await addCategory(selectedCategory, selectedIcon);
+    if (!/^\d*$/.test(cleanedValue)) return;
+
+    if (cleanedValue.length > 11) return;
+
+    const formatted = cleanedValue.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    setAmount(formatted);
+  };
+
+  const getNumericValue = (): number => {
+    return Number(amount.replace(/\./g, ""));
+  };
+
+  const handleAdd = async () => {
+    const numericAmount = getNumericValue();
+    if (
+      !amount ||
+      isNaN(numericAmount) ||
+      numericAmount === 0 ||
+      !selectedCategory
+    )
+      return;
+
+    let categoryIcon = selectedIcon;
+
+    if (defaultIcon && selectedCategory === defaultCategory) {
+      categoryIcon = defaultIcon;
+    } else {
+      const categoryItem = dropdownCategories.find(
+        (c) => c.value === selectedCategory,
+      );
+      categoryIcon = categoryItem?.icon || selectedIcon;
     }
+
+    await addCategory(selectedCategory, categoryIcon);
 
     await addTransaction({
       type: isIncome ? "income" : "expense",
-      amount: Number(amount),
+      amount: numericAmount,
       category: selectedCategory,
     });
     setAmount("");
@@ -144,16 +173,15 @@ export default function CardTransaction({
         </View>
 
         <Dropdown
-          style={[
-            styles.dropdown,
-            selectedCategory && styles.dropdownSelected,
-          ]}
+          style={[styles.dropdown, selectedCategory && styles.dropdownSelected]}
           data={dropdownCategories}
           labelField="label"
           valueField="value"
           placeholder="Selecciona categoría"
           value={selectedCategory}
-          onChange={(item) => setSelectedCategory(item.value)}
+          onChange={(item) => {
+            setSelectedCategory(item.value);
+          }}
           renderItem={(item) => (
             <View
               style={[
@@ -173,14 +201,15 @@ export default function CardTransaction({
                 <Ionicons
                   name={item.icon as any}
                   size={20}
-                  color={selectedCategory === item.value ? "#3B82F6" : "#6B7280"}
+                  color={
+                    selectedCategory === item.value ? "#3B82F6" : "#6B7280"
+                  }
                 />
               </View>
               <Text
                 style={[
                   styles.dropdownLabel,
-                  selectedCategory === item.value &&
-                    styles.dropdownLabelActive,
+                  selectedCategory === item.value && styles.dropdownLabelActive,
                 ]}
               >
                 {item.label}
@@ -224,7 +253,7 @@ export default function CardTransaction({
           placeholder="Monto"
           placeholderTextColor="#000"
           value={amount}
-          onChangeText={setAmount}
+          onChangeText={handleAmountChange}
           keyboardType="numeric"
           style={styles.input}
         />
@@ -234,7 +263,6 @@ export default function CardTransaction({
         </TouchableOpacity>
       </View>
 
-      {/* Icon Picker Modal */}
       <Modal
         visible={showIconPicker}
         transparent
@@ -251,7 +279,7 @@ export default function CardTransaction({
             </View>
 
             <FlatList
-              data={IONICONS_CATEGORIES}
+              data={ICON_LIST}
               numColumns={5}
               keyExtractor={(item, index) => index.toString()}
               scrollEnabled={true}
@@ -297,12 +325,14 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#fff",
     padding: 20,
+    paddingBottom: 28,
     borderRadius: 16,
     elevation: 4,
     shadowColor: "#000",
     shadowOpacity: 0.08,
     shadowRadius: 8,
-    marginVertical: 16,
+    marginVertical: 20,
+    marginHorizontal: 12,
   },
   title: {
     fontSize: 18,
@@ -336,25 +366,35 @@ const styles = StyleSheet.create({
     backgroundColor: "#F3F4F6",
     padding: 14,
     borderRadius: 12,
-    marginBottom: 12,
+    marginBottom: 16,
     borderWidth: 2,
     borderColor: "#E5E7EB",
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
   },
   dropdownSelected: {
     borderColor: "#3B82F6",
     backgroundColor: "#FFFFFF",
+    elevation: 3,
+    shadowOpacity: 0.1,
   },
   dropdownContainer: {
     backgroundColor: "#FFFFFF",
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "#E5E7EB",
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
   },
   dropdownItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+    padding: 12,
     gap: 12,
   },
   dropdownItemActive: {
