@@ -109,6 +109,28 @@ export const useDashboard = () => {
     return { income, expense, balance: income - expense };
   }, [transactions, period]);
 
+  const selectedPeriodExpense = useMemo(() => {
+    if (period !== "month") return current.expense;
+
+    const start = dayjs()
+      .year(selectedYear)
+      .month(selectedMonth)
+      .startOf("month");
+    const end = dayjs().year(selectedYear).month(selectedMonth).endOf("month");
+
+    let expense = 0;
+
+    transactions.forEach((tx) => {
+      if (tx.type !== "expense") return;
+      const date = dayjs(tx.createdAt?.toDate?.() ?? tx.createdAt);
+      if (date.isAfter(start) && date.isBefore(end)) {
+        expense += tx.amount;
+      }
+    });
+
+    return expense;
+  }, [transactions, period, current.expense, selectedYear, selectedMonth]);
+
   const allCategories = useMemo(() => {
     let start, end;
 
@@ -148,9 +170,15 @@ export const useDashboard = () => {
         label,
         value,
         color: colors[i % colors.length],
-        text: `${Math.round((value / (current.expense || 1)) * 100)}%`,
+        text: `${Math.round((value / (selectedPeriodExpense || 1)) * 100)}%`,
       }));
-  }, [transactions, period, current.expense, selectedYear, selectedMonth]);
+  }, [
+    transactions,
+    period,
+    selectedPeriodExpense,
+    selectedYear,
+    selectedMonth,
+  ]);
 
   const categoryDistribution = useMemo(() => {
     if (!selectedCategory) return allCategories;
@@ -210,5 +238,6 @@ export const useDashboard = () => {
     setSelectedYear,
     selectedMonth,
     setSelectedMonth,
+    selectedPeriodExpense,
   };
 };

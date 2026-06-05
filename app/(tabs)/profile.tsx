@@ -3,11 +3,10 @@ import { BACKGROUND } from "@/constants/theme2";
 import { useAuth } from "@/context/AuthContext";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React from "react";
 import {
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   TouchableOpacity,
   View,
@@ -15,10 +14,10 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Profile() {
-  const gotToEditProfile = () => {
+  /* const gotToEditProfile = () => {
     router.push("/profile/Edit");
-  };
-  const [darkMode, setDarkMode] = useState(true);
+  }; */
+  //const [darkMode, setDarkMode] = useState(true);
 
   const { loading, user } = useAuth();
 
@@ -33,7 +32,6 @@ export default function Profile() {
   }
   return (
     <SafeAreaView style={styles.safe}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Perfil</Text>
       </View>
@@ -42,13 +40,11 @@ export default function Profile() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* User Card */}
         <View style={styles.userCard}>
           <Text style={styles.name}>{user.displayName}</Text>
           <Text style={styles.email}>{user.email}</Text>
         </View>
 
-        {/* Settings */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Configuración</Text>
 
@@ -57,13 +53,12 @@ export default function Profile() {
             onPress={() => router.push("/profile/Edit")}
           />
           <Option label="Lenguaje" value="Español" />
-          <Option
+          {/* <Option
             label="Tema oscuro"
             right={<Switch value={darkMode} onValueChange={setDarkMode} />}
-          />
+          /> */}
         </View>
 
-        {/* Support */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Soporte</Text>
           <Option label="Centro de ayuda" />

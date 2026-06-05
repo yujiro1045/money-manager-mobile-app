@@ -222,6 +222,7 @@ export default function CardTransaction({
                   const category = dropdownCategories.find(
                     (c) => c.value === selectedCategory,
                   );
+                  const iconToUse = category?.icon || selectedIcon || "home";
                   return (
                     <View
                       style={{
@@ -231,10 +232,11 @@ export default function CardTransaction({
                         backgroundColor: "#E5F7FF",
                         alignItems: "center",
                         justifyContent: "center",
+                        marginRight: 12,
                       }}
                     >
                       <Ionicons
-                        name={category?.icon as any}
+                        name={iconToUse as any}
                         size={20}
                         color="#3B82F6"
                       />
@@ -395,7 +397,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 12,
-    gap: 12,
+    gap: 10,
   },
   dropdownItemActive: {
     backgroundColor: "#F0F7FF",

@@ -1,6 +1,7 @@
 import CustomSelect from "@/components/ui/CustomSelect";
 import { BACKGROUND, MUTED, PRIMARY, TEXT } from "@/constants/theme2";
 import { DashboardPeriod, useDashboard } from "@/hooks/useDasboard";
+
 import dayjs from "dayjs";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
@@ -49,6 +50,7 @@ export default function DashboardScreen() {
     setSelectedYear,
     selectedMonth,
     setSelectedMonth,
+    selectedPeriodExpense,
   } = useDashboard();
 
   const [selectedTrendMonth, setSelectedTrendMonth] = React.useState<number>(
@@ -316,7 +318,7 @@ export default function DashboardScreen() {
                           ? (allCategories.find(
                               (c) => c.label === selectedCategory,
                             )?.value ?? 0)
-                          : current.expense,
+                          : selectedPeriodExpense,
                       )}
                     </Text>
                   </View>
@@ -339,6 +341,7 @@ export default function DashboardScreen() {
                     >
                       <View
                         style={[
+                          styles.pieLegendColorDot,
                           {
                             backgroundColor: cat.color,
                             opacity: isFiltered ? 0.3 : 1,
@@ -354,14 +357,17 @@ export default function DashboardScreen() {
                       >
                         {cat.label}
                       </Text>
-                      <Text
+                      <View
                         style={[
-                          styles.pieLegendPct,
-                          { opacity: isFiltered ? 0.3 : 1 },
+                          styles.pieLegendPctContainer,
+                          {
+                            backgroundColor: cat.color,
+                            opacity: isFiltered ? 0.3 : 1,
+                          },
                         ]}
                       >
-                        {cat.text}
-                      </Text>
+                        <Text style={styles.pieLegendPct}>{cat.text}</Text>
+                      </View>
                     </TouchableOpacity>
                   );
                 })}
@@ -492,10 +498,17 @@ const styles = StyleSheet.create({
   pieCenter: { alignItems: "center", width: 90, paddingHorizontal: 2 },
   pieCenterLabel: { fontSize: 11, color: MUTED },
   pieCenterValue: { fontSize: 12, fontWeight: "700", color: TEXT },
-  pieLegend: { flex: 1, gap: 6 },
-  pieLegendItem: { flexDirection: "row", alignItems: "center", gap: 6 },
-  pieLegendLabel: { flex: 1, fontSize: 11, color: TEXT },
-  pieLegendPct: { fontSize: 11, fontWeight: "700", color: MUTED },
+  pieLegend: { flex: 1, gap: 8 },
+  pieLegendItem: { flexDirection: "row", alignItems: "center", gap: 8 },
+  pieLegendColorDot: { width: 12, height: 12, borderRadius: 6 },
+  pieLegendLabel: { flex: 1, fontSize: 12, color: TEXT, fontWeight: "500" },
+  pieLegendPctContainer: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+    marginLeft: "auto",
+  },
+  pieLegendPct: { fontSize: 12, fontWeight: "700", color: "#FFFFFF" },
   pieLegendItemSelected: {
     backgroundColor: "#F0F0FF",
     borderRadius: 8,
