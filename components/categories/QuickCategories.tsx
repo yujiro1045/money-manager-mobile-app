@@ -23,6 +23,7 @@ const QuickCategories = () => {
     selectedCat,
     showAll,
     showSheet,
+    sheetKey,
     visibleCategories,
     allCategories,
   } = useQuickCategories();
@@ -150,6 +151,7 @@ const QuickCategories = () => {
               keyboardShouldPersistTaps="handled"
             >
               <CardTransaction
+                key={sheetKey}
                 defaultCategory={selectedCat?.label}
                 defaultType={selectedCat?.type}
                 defaultIcon={selectedCat?.icon}

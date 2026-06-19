@@ -89,4 +89,5 @@ export const IONICONS_CATEGORIES = [
   "close-circle",
   "alert-circle",
   "information-circle",
+  "refresh",
 ];

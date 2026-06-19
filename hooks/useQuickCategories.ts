@@ -14,6 +14,7 @@ export const useQuickCategories = () => {
   const [selectedCat, setSelectedCat] = useState<QuickCategory | null>(null);
   const [showSheet, setShowSheet] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const [sheetKey, setSheetKey] = useState(0);
 
   // Solo mostrar las categorías por defecto, sin mezclar con Firebase
   const allCategories = DEFAULT_CATEGORIES;
@@ -22,6 +23,7 @@ export const useQuickCategories = () => {
     setSelectedCat(cat);
     setShowAll(false);
     setShowSheet(true);
+    setSheetKey((k) => k + 1);
   };
 
   const handleSubmit = () => {
@@ -32,6 +34,7 @@ export const useQuickCategories = () => {
     selectedCat,
     showSheet,
     showAll,
+    sheetKey,
     visibleCategories: allCategories.slice(0, VISIBLE_COUNT),
     allCategories,
     handlePress,

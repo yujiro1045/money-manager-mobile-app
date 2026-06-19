@@ -1,9 +1,11 @@
 import { useTransactions } from "@/context/TransactionsContext";
+import { PRIMARY, TEXT } from "@/constants/theme2";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import React, { useEffect, useState } from "react";
 import {
   FlatList,
   Modal,
+  ScrollView,
   StyleSheet,
   Switch,
   Text,
@@ -11,7 +13,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { Dropdown } from "react-native-element-dropdown";
 import CustomModal from "../ui/CustomModal";
 import { IONICONS_CATEGORIES } from "../ui/icons/ioniconsCategories";
 
@@ -47,8 +48,10 @@ export default function CardTransaction({
   const [newCategory, setNewCategory] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedIcon, setSelectedIcon] = useState<string>("home");
+  const [pickerIcon, setPickerIcon] = useState<string>("home");
   const [openModal, setOpenModal] = useState(false);
   const [showIconPicker, setShowIconPicker] = useState(false);
+  const [showCategorySheet, setShowCategorySheet] = useState(false);
 
   useEffect(() => {
     if (defaultCategory) setSelectedCategory(defaultCategory);
@@ -58,7 +61,11 @@ export default function CardTransaction({
     if (defaultType) setIsIncome(defaultType === "income");
   }, [defaultType]);
 
-  const dropdownCategories: CategoryItem[] = [
+  useEffect(() => {
+    if (defaultIcon) setSelectedIcon(defaultIcon);
+  }, [defaultIcon]);
+
+  const allCategoryItems: CategoryItem[] = [
     ...DEFAULT_CATEGORIES,
     ...categories
       .filter((c) => c.name !== "General")
@@ -69,21 +76,31 @@ export default function CardTransaction({
       })),
   ];
 
-  if (defaultCategory && defaultIcon) {
-    const existingIndex = dropdownCategories.findIndex(
+  if (defaultCategory) {
+    const existingIndex = allCategoryItems.findIndex(
       (c) => c.value === defaultCategory,
     );
     if (existingIndex >= 0) {
-      dropdownCategories[existingIndex].icon = defaultIcon;
+      if (defaultIcon) allCategoryItems[existingIndex].icon = defaultIcon;
+    } else {
+      allCategoryItems.push({
+        label: defaultCategory,
+        value: defaultCategory,
+        icon: defaultIcon || "home",
+      });
     }
   }
 
+  const selectedCategoryData = selectedCategory
+    ? allCategoryItems.find((c) => c.value === selectedCategory)
+    : null;
+
   const handleCreateCategory = async () => {
     if (!newCategory.trim()) return;
-    await addCategory(newCategory.trim(), selectedIcon);
+    await addCategory(newCategory.trim(), pickerIcon);
     setSelectedCategory(newCategory.trim());
     setNewCategory("");
-    setSelectedIcon("home");
+    setPickerIcon("home");
     setShowIconPicker(false);
   };
 
@@ -117,7 +134,7 @@ export default function CardTransaction({
     if (defaultIcon && selectedCategory === defaultCategory) {
       categoryIcon = defaultIcon;
     } else {
-      const categoryItem = dropdownCategories.find(
+      const categoryItem = allCategoryItems.find(
         (c) => c.value === selectedCategory,
       );
       categoryIcon = categoryItem?.icon || selectedIcon;
@@ -150,110 +167,69 @@ export default function CardTransaction({
           <Text style={{ color: !isIncome ? "red" : "#999" }}>Gasto</Text>
         </View>
 
+        <TouchableOpacity
+          style={[
+            styles.selectTrigger,
+            selectedCategory && styles.selectTriggerActive,
+          ]}
+          onPress={() => setShowCategorySheet(true)}
+          activeOpacity={0.7}
+        >
+          {selectedCategoryData ? (
+            <>
+              <View style={styles.selectIconBox}>
+                <Ionicons
+                  name={selectedCategoryData.icon as any}
+                  size={20}
+                  color={PRIMARY}
+                />
+              </View>
+              <Text style={styles.selectText}>
+                {selectedCategoryData.label}
+              </Text>
+            </>
+          ) : (
+            <>
+              <View style={styles.selectIconBoxPlaceholder}>
+                <Ionicons name="folder-open-outline" size={18} color="#94A3B8" />
+              </View>
+              <Text style={styles.selectPlaceholder}>
+                Selecciona categoría
+              </Text>
+            </>
+          )}
+          <Ionicons name="chevron-down" size={18} color="#94A3B8" />
+        </TouchableOpacity>
+
         <View style={styles.inputCategory}>
           <TouchableOpacity
-            style={[styles.iconPickerButton, { backgroundColor: "#F3F4F6" }]}
+            style={styles.iconPickerButton}
             onPress={() => setShowIconPicker(true)}
           >
-            <Ionicons name={selectedIcon as any} size={28} color="#3B82F6" />
+            <Ionicons name={pickerIcon as any} size={24} color={PRIMARY} />
           </TouchableOpacity>
           <TextInput
             placeholder="Nueva categoría"
-            placeholderTextColor="#000"
+            placeholderTextColor="#94A3B8"
             value={newCategory}
             onChangeText={setNewCategory}
-            style={[styles.input, { flex: 1, marginBottom: 0 }]}
+            style={styles.createInput}
           />
           <TouchableOpacity
-            style={styles.createButton}
+            style={[
+              styles.createButton,
+              !newCategory.trim() && { opacity: 0.5 },
+            ]}
             onPress={handleCreateCategory}
+            disabled={!newCategory.trim()}
           >
             <Text style={styles.createButtonText}>Crear</Text>
           </TouchableOpacity>
         </View>
 
-        <Dropdown
-          style={[styles.dropdown, selectedCategory && styles.dropdownSelected]}
-          data={dropdownCategories}
-          labelField="label"
-          valueField="value"
-          placeholder="Selecciona categoría"
-          value={selectedCategory}
-          onChange={(item) => {
-            setSelectedCategory(item.value);
-          }}
-          renderItem={(item) => (
-            <View
-              style={[
-                styles.dropdownItem,
-                selectedCategory === item.value && styles.dropdownItemActive,
-              ]}
-            >
-              <View
-                style={[
-                  styles.dropdownIconBox,
-                  {
-                    backgroundColor:
-                      selectedCategory === item.value ? "#E5F7FF" : "#F3F4F6",
-                  },
-                ]}
-              >
-                <Ionicons
-                  name={item.icon as any}
-                  size={20}
-                  color={
-                    selectedCategory === item.value ? "#3B82F6" : "#6B7280"
-                  }
-                />
-              </View>
-              <Text
-                style={[
-                  styles.dropdownLabel,
-                  selectedCategory === item.value && styles.dropdownLabelActive,
-                ]}
-              >
-                {item.label}
-              </Text>
-            </View>
-          )}
-          renderLeftIcon={() =>
-            selectedCategory
-              ? (() => {
-                  const category = dropdownCategories.find(
-                    (c) => c.value === selectedCategory,
-                  );
-                  const iconToUse = category?.icon || selectedIcon || "home";
-                  return (
-                    <View
-                      style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 10,
-                        backgroundColor: "#E5F7FF",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginRight: 12,
-                      }}
-                    >
-                      <Ionicons
-                        name={iconToUse as any}
-                        size={20}
-                        color="#3B82F6"
-                      />
-                    </View>
-                  );
-                })()
-              : null
-          }
-          containerStyle={styles.dropdownContainer}
-          itemTextStyle={styles.dropdownItemText}
-          activeColor="#E5F7FF"
-          maxHeight={300}
-        />
-
         <TextInput
           placeholder="Monto"
-          placeholderTextColor="#000"
+          placeholderTextColor="#94A3B8"
           value={amount}
           onChangeText={handleAmountChange}
           keyboardType="numeric"
@@ -264,6 +240,80 @@ export default function CardTransaction({
           <Text style={styles.buttonText}>Agregar</Text>
         </TouchableOpacity>
       </View>
+
+      <Modal
+        visible={showCategorySheet}
+        transparent
+        animationType="slide"
+        statusBarTranslucent
+        onRequestClose={() => setShowCategorySheet(false)}
+      >
+        <View style={styles.sheetOverlay}>
+          <TouchableOpacity
+            style={styles.sheetBackdrop}
+            activeOpacity={1}
+            onPress={() => setShowCategorySheet(false)}
+          />
+          <View style={styles.sheetContainer}>
+            <View style={styles.sheetHandle} />
+            <View style={styles.sheetHeader}>
+              <Text style={styles.sheetTitle}>Selecciona categoría</Text>
+              <TouchableOpacity onPress={() => setShowCategorySheet(false)}>
+                <Ionicons name="close" size={22} color="#94A3B8" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.sheetGrid}
+            >
+              {allCategoryItems.map((item, index) => {
+                const isSelected = selectedCategory === item.value;
+                return (
+                  <TouchableOpacity
+                    key={item.value}
+                    style={[
+                      styles.sheetItem,
+                      isSelected && styles.sheetItemSelected,
+                    ]}
+                    onPress={() => {
+                      setSelectedCategory(item.value);
+                      setShowCategorySheet(false);
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <View
+                      style={[
+                        styles.sheetItemIconBox,
+                        isSelected && styles.sheetItemIconBoxSelected,
+                      ]}
+                    >
+                      <Ionicons
+                        name={item.icon as any}
+                        size={22}
+                        color={isSelected ? PRIMARY : "#64748B"}
+                      />
+                    </View>
+                    {isSelected ? (
+                      <View style={styles.sheetCheckBadge}>
+                        <Ionicons name="checkmark" size={12} color="#fff" />
+                      </View>
+                    ) : null}
+                    <Text
+                      style={[
+                        styles.sheetItemLabel,
+                        isSelected && styles.sheetItemLabelSelected,
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {item.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
 
       <Modal
         visible={showIconPicker}
@@ -290,17 +340,17 @@ export default function CardTransaction({
                 <TouchableOpacity
                   style={[
                     styles.iconOption,
-                    selectedIcon === item && styles.iconOptionSelected,
+                    pickerIcon === item && styles.iconOptionSelected,
                   ]}
                   onPress={() => {
-                    setSelectedIcon(item);
+                    setPickerIcon(item);
                     setShowIconPicker(false);
                   }}
                 >
                   <Ionicons
                     name={item as any}
                     size={24}
-                    color={selectedIcon === item ? "#3B82F6" : "#6B7280"}
+                    color={pickerIcon === item ? "#3B82F6" : "#6B7280"}
                   />
                 </TouchableOpacity>
               )}
@@ -348,115 +398,215 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 16,
   },
+
+  // --- Select trigger ---
+  selectTrigger: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F8FAFC",
+    borderWidth: 1.5,
+    borderColor: "#E2E8F0",
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    height: 52,
+    gap: 10,
+    marginBottom: 12,
+  },
+  selectTriggerActive: {
+    borderColor: PRIMARY,
+    backgroundColor: "#FFFFFF",
+  },
+  selectIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: "#EFF6FF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  selectIconBoxPlaceholder: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: "#F1F5F9",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  selectText: {
+    flex: 1,
+    fontSize: 15,
+    color: TEXT,
+    fontWeight: "500",
+  },
+  selectPlaceholder: {
+    flex: 1,
+    fontSize: 15,
+    color: "#94A3B8",
+  },
+
+  // --- Create category ---
   inputCategory: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
     marginBottom: 12,
   },
-  input: {
-    backgroundColor: "#F3F4F6",
-    padding: 14,
+  iconPickerButton: {
+    width: 44,
+    height: 44,
     borderRadius: 12,
-    marginBottom: 12,
-    color: "#000",
-  },
-  inputTextColor: {
-    color: "#000",
-  },
-  dropdown: {
-    backgroundColor: "#F3F4F6",
-    padding: 14,
-    borderRadius: 12,
-    marginBottom: 16,
-    borderWidth: 2,
-    borderColor: "#E5E7EB",
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-  },
-  dropdownSelected: {
-    borderColor: "#3B82F6",
-    backgroundColor: "#FFFFFF",
-    elevation: 3,
-    shadowOpacity: 0.1,
-  },
-  dropdownContainer: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-  },
-  dropdownItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 12,
-    gap: 10,
-  },
-  dropdownItemActive: {
-    backgroundColor: "#F0F7FF",
-  },
-  dropdownIconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: "#F8FAFC",
+    borderWidth: 1.5,
+    borderColor: "#E2E8F0",
   },
-  dropdownIcon: {
-    fontSize: 20,
-  },
-  dropdownLabel: {
-    fontSize: 14,
-    color: "#6B7280",
-    fontWeight: "500",
-  },
-  dropdownLabelActive: {
-    color: "#3B82F6",
-    fontWeight: "600",
-  },
-  dropdownItemText: {
-    fontSize: 14,
-    color: "#000",
+  createInput: {
+    flex: 1,
+    backgroundColor: "#F8FAFC",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: "#E2E8F0",
+    fontSize: 15,
+    color: TEXT,
   },
   createButton: {
-    backgroundColor: "#10B981",
-    paddingHorizontal: 14,
-    paddingVertical: 14,
+    backgroundColor: PRIMARY,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderRadius: 12,
   },
   createButtonText: {
     color: "#fff",
     fontWeight: "600",
+    fontSize: 14,
   },
+
+  // --- Amount ---
+  input: {
+    backgroundColor: "#F8FAFC",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 14,
+    marginBottom: 12,
+    borderWidth: 1.5,
+    borderColor: "#E2E8F0",
+    fontSize: 15,
+    color: TEXT,
+  },
+
+  // --- Add button ---
   button: {
     backgroundColor: "#1F2A5A",
     padding: 14,
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: "center",
   },
   buttonText: {
     color: "#fff",
     fontWeight: "600",
   },
-  iconPickerButton: {
-    width: 50,
-    height: 50,
+
+  // --- Category bottom sheet ---
+  sheetOverlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+  },
+  sheetBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.4)",
+  },
+  sheetContainer: {
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingTop: 12,
+    paddingHorizontal: 16,
+    paddingBottom: 32,
+    maxHeight: "80%",
+  },
+  sheetHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: "#E2E8F0",
+    borderRadius: 2,
+    alignSelf: "center",
+    marginBottom: 16,
+  },
+  sheetHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+    paddingHorizontal: 4,
+  },
+  sheetTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: TEXT,
+  },
+  sheetGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+    paddingBottom: 16,
+    paddingHorizontal: 4,
+  },
+  sheetItem: {
+    width: "30%",
+    flexGrow: 1,
+    flexBasis: "30%",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 14,
+    paddingHorizontal: 4,
+    borderRadius: 16,
+    backgroundColor: "#F8FAFC",
+    maxWidth: "31%",
+  },
+  sheetItemSelected: {
+    backgroundColor: "#EFF6FF",
+    borderWidth: 1.5,
+    borderColor: PRIMARY,
+    paddingVertical: 12.5,
+    paddingHorizontal: 2.5,
+  },
+  sheetItemIconBox: {
+    width: 44,
+    height: 44,
     borderRadius: 12,
+    backgroundColor: "#F1F5F9",
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 2,
-    borderColor: "#E5E7EB",
   },
-  iconPickerText: {
-    fontSize: 28,
+  sheetItemIconBoxSelected: {
+    backgroundColor: "#DBEAFE",
   },
+  sheetCheckBadge: {
+    position: "absolute",
+    top: 6,
+    right: 6,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: PRIMARY,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  sheetItemLabel: {
+    fontSize: 11,
+    color: "#475569",
+    fontWeight: "500",
+    textAlign: "center",
+  },
+  sheetItemLabelSelected: {
+    color: PRIMARY,
+    fontWeight: "600",
+  },
+
+  // --- Icon picker ---
   iconPickerContainer: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -505,8 +655,5 @@ const styles = StyleSheet.create({
   iconOptionSelected: {
     backgroundColor: "#E5F7FF",
     borderColor: "#3B82F6",
-  },
-  iconOptionText: {
-    fontSize: 32,
   },
 });
