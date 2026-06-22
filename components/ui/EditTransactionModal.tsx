@@ -1,16 +1,15 @@
-import { useTransactions } from "@/context/TransactionsContext";
 import { Transaction } from "@/hooks/useTrasactionList";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import React, { useEffect, useState } from "react";
 import {
-  Modal,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import { Dropdown } from "react-native-element-dropdown";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import AnimatedBottomSheet from "./AnimatedBottomSheet";
 import CustomModal from "./CustomModal";
 
 type EditTransactionModalProps = {
@@ -31,10 +30,8 @@ export default function EditTransactionModal({
   onSuccess,
   onUpdate,
 }: EditTransactionModalProps) {
-  const { categories } = useTransactions();
-
   const [amount, setAmount] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [name, setName] = useState("");
   const [isIncome, setIsIncome] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -44,16 +41,10 @@ export default function EditTransactionModal({
       setAmount(
         transaction.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."),
       );
-      setSelectedCategory(transaction.category);
+      setName(transaction.category);
       setIsIncome(transaction.type === "income");
     }
   }, [transaction, visible]);
-
-  const dropdownCategories = categories.map((c) => ({
-    label: c.name,
-    value: c.name,
-    icon: c.icon || "home",
-  }));
 
   const handleAmountChange = (text: string) => {
     const cleanedValue = text.replace(/\./g, "");
@@ -68,7 +59,7 @@ export default function EditTransactionModal({
   };
 
   const handleSave = async () => {
-    if (!transaction || !amount || !selectedCategory) return;
+    if (!transaction || !amount || !name.trim()) return;
 
     const numericAmount = getNumericAmount();
     if (isNaN(numericAmount) || numericAmount === 0) return;
@@ -77,7 +68,7 @@ export default function EditTransactionModal({
     try {
       await onUpdate(transaction.id, {
         amount: numericAmount,
-        category: selectedCategory,
+        category: name.trim(),
         type: isIncome ? "income" : "expense",
       });
       setShowSuccess(true);
@@ -98,41 +89,29 @@ export default function EditTransactionModal({
 
   return (
     <>
-      <Modal
-        visible={visible}
-        transparent
-        animationType="slide"
-        statusBarTranslucent
-      >
-        <View style={styles.container}>
-          <View style={styles.content}>
-            <View style={styles.header}>
-              <Text style={styles.title}>Editar Transacción</Text>
-              <TouchableOpacity onPress={onClose}>
-                <Ionicons name="close" size={24} color="#374151" />
-              </TouchableOpacity>
-            </View>
+      <AnimatedBottomSheet visible={visible} onClose={onClose}>
+        <View style={styles.content}>
+          <View style={styles.header}>
+            <Text style={styles.title}>Editar Transacción</Text>
+            <TouchableOpacity onPress={onClose}>
+              <Ionicons name="close" size={24} color="#374151" />
+            </TouchableOpacity>
+          </View>
 
+          <KeyboardAwareScrollView
+            bottomOffset={50}
+            keyboardShouldPersistTaps="handled"
+            bounces={false}
+            showsVerticalScrollIndicator={false}
+          >
             <View style={styles.section}>
-              <Text style={styles.label}>Categoría</Text>
-              <Dropdown
-                style={styles.dropdown}
-                data={dropdownCategories}
-                labelField="label"
-                valueField="value"
-                placeholder="Selecciona categoría"
-                value={selectedCategory}
-                onChange={(item) => setSelectedCategory(item.value)}
-                renderItem={(item) => (
-                  <View style={styles.dropdownItem}>
-                    <Ionicons
-                      name={item.icon as any}
-                      size={20}
-                      color="#6B7280"
-                    />
-                    <Text style={styles.dropdownLabel}>{item.label}</Text>
-                  </View>
-                )}
+              <Text style={styles.label}>Nombre</Text>
+              <TextInput
+                placeholder="Nombre de la transacción"
+                placeholderTextColor="#9CA3AF"
+                value={name}
+                onChangeText={setName}
+                style={styles.input}
               />
             </View>
 
@@ -198,9 +177,9 @@ export default function EditTransactionModal({
                 {isLoading ? "Guardando..." : "Guardar Cambios"}
               </Text>
             </TouchableOpacity>
-          </View>
+          </KeyboardAwareScrollView>
         </View>
-      </Modal>
+      </AnimatedBottomSheet>
 
       <CustomModal
         visible={showSuccess}
@@ -214,11 +193,6 @@ export default function EditTransactionModal({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "flex-end",
-  },
   content: {
     backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 24,
@@ -245,24 +219,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#374151",
     marginBottom: 10,
-  },
-  dropdown: {
-    backgroundColor: "#F3F4F6",
-    padding: 14,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: "#E5E7EB",
-  },
-  dropdownItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 12,
-    gap: 12,
-  },
-  dropdownLabel: {
-    fontSize: 14,
-    color: "#374151",
-    fontWeight: "500",
   },
   typeButtons: {
     flexDirection: "row",

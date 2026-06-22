@@ -1,7 +1,6 @@
 import { useQuickCategories } from "@/hooks/useQuickCategories";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import {
-  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,6 +11,7 @@ import {
 import { PRIMARY_COLOR } from "@/constants/theme2";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import CardTransaction from "../cards/CardTransaction";
+import AnimatedBottomSheet from "../ui/AnimatedBottomSheet";
 
 const QuickCategories = () => {
   const {
@@ -95,72 +95,51 @@ const QuickCategories = () => {
         </View>
       </View>
 
-      <Modal
-        visible={showAll}
-        animationType="slide"
-        transparent
-        statusBarTranslucent
-      >
-        <View style={styles.overlay}>
-          <TouchableOpacity style={styles.backdrop} onPress={closeAll} />
-          <View style={styles.sheet}>
-            <View style={styles.sheetHandle} />
-            <View style={styles.sheetHeader}>
-              <Text style={styles.sheetTitle}>Todas las categorías</Text>
-              <TouchableOpacity onPress={closeAll} style={styles.closeButton}>
-                <Ionicons name="close" size={24} color="#374151" />
-              </TouchableOpacity>
+      <AnimatedBottomSheet visible={showAll} onClose={closeAll}>
+        <View style={styles.sheet}>
+          <View style={styles.sheetHandle} />
+          <View style={styles.sheetHeader}>
+            <Text style={styles.sheetTitle}>Todas las categorías</Text>
+            <TouchableOpacity onPress={closeAll} style={styles.closeButton}>
+              <Ionicons name="close" size={24} color="#374151" />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+          >
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Gastos</Text>
+              {renderCategoryGrid(expenseCategories)}
             </View>
 
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.scrollContent}
-            >
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Gastos</Text>
-                {renderCategoryGrid(expenseCategories)}
-              </View>
-
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Ingresos</Text>
-                {renderCategoryGrid(incomeCategories)}
-              </View>
-            </ScrollView>
-          </View>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Ingresos</Text>
+              {renderCategoryGrid(incomeCategories)}
+            </View>
+          </ScrollView>
         </View>
-      </Modal>
+      </AnimatedBottomSheet>
 
-      <Modal
-        visible={showSheet}
-        animationType="slide"
-        transparent
-        statusBarTranslucent
-      >
-        <View style={styles.modalContainer}>
-          <TouchableOpacity
-            style={styles.backdropArea}
-            onPress={closeSheet}
-            activeOpacity={1}
-          />
-
-          <View style={styles.sheet}>
-            <View style={styles.sheetHandle} />
-            <KeyboardAwareScrollView
-              bottomOffset={62}
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-            >
-              <CardTransaction
-                key={sheetKey}
-                defaultCategory={selectedCat?.label}
-                defaultType={selectedCat?.type}
-                defaultIcon={selectedCat?.icon}
-                onSubmit={handleSubmit}
-              />
-            </KeyboardAwareScrollView>
-          </View>
+      <AnimatedBottomSheet visible={showSheet} onClose={closeSheet}>
+        <View style={styles.sheet}>
+          <View style={styles.sheetHandle} />
+          <KeyboardAwareScrollView
+            bottomOffset={62}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            <CardTransaction
+              key={sheetKey}
+              defaultCategory={selectedCat?.label}
+              defaultType={selectedCat?.type}
+              defaultIcon={selectedCat?.icon}
+              onSubmit={handleSubmit}
+            />
+          </KeyboardAwareScrollView>
         </View>
-      </Modal>
+      </AnimatedBottomSheet>
     </>
   );
 };
@@ -210,21 +189,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "500",
   },
-  overlay: {
-    flex: 1,
-    justifyContent: "flex-end",
-  },
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.5)",
-  },
   sheet: {
     backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    padding: 16,
-    paddingBottom: 40,
-    maxHeight: "90%",
+    paddingTop: 16,
+    paddingHorizontal: 16,
   },
   sheetHandle: {
     width: 40,
@@ -266,13 +236,5 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 12,
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "flex-end",
-  },
-  backdropArea: {
-    flex: 1,
   },
 });

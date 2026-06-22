@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import AnimatedBottomSheet from "../ui/AnimatedBottomSheet";
 import CustomModal from "../ui/CustomModal";
 import { IONICONS_CATEGORIES } from "../ui/icons/ioniconsCategories";
 
@@ -241,79 +242,69 @@ export default function CardTransaction({
         </TouchableOpacity>
       </View>
 
-      <Modal
+      <AnimatedBottomSheet
         visible={showCategorySheet}
-        transparent
-        animationType="slide"
-        statusBarTranslucent
-        onRequestClose={() => setShowCategorySheet(false)}
+        onClose={() => setShowCategorySheet(false)}
       >
-        <View style={styles.sheetOverlay}>
-          <TouchableOpacity
-            style={styles.sheetBackdrop}
-            activeOpacity={1}
-            onPress={() => setShowCategorySheet(false)}
-          />
-          <View style={styles.sheetContainer}>
-            <View style={styles.sheetHandle} />
-            <View style={styles.sheetHeader}>
-              <Text style={styles.sheetTitle}>Selecciona categoría</Text>
-              <TouchableOpacity onPress={() => setShowCategorySheet(false)}>
-                <Ionicons name="close" size={22} color="#94A3B8" />
-              </TouchableOpacity>
-            </View>
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.sheetGrid}
-            >
-              {allCategoryItems.map((item, index) => {
-                const isSelected = selectedCategory === item.value;
-                return (
-                  <TouchableOpacity
-                    key={item.value}
-                    style={[
-                      styles.sheetItem,
-                      isSelected && styles.sheetItemSelected,
-                    ]}
-                    onPress={() => {
-                      setSelectedCategory(item.value);
-                      setShowCategorySheet(false);
-                    }}
-                    activeOpacity={0.7}
-                  >
-                    <View
-                      style={[
-                        styles.sheetItemIconBox,
-                        isSelected && styles.sheetItemIconBoxSelected,
-                      ]}
-                    >
-                      <Ionicons
-                        name={item.icon as any}
-                        size={22}
-                        color={isSelected ? PRIMARY : "#64748B"}
-                      />
-                    </View>
-                    {isSelected ? (
-                      <View style={styles.sheetCheckBadge}>
-                        <Ionicons name="checkmark" size={12} color="#fff" />
-                      </View>
-                    ) : null}
-                    <Text
-                      style={[
-                        styles.sheetItemLabel,
-                        isSelected && styles.sheetItemLabelSelected,
-                      ]}
-                      numberOfLines={1}
-                    >
-                      {item.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
+        <View style={styles.sheetContainer}>
+          <View style={styles.sheetHandle} />
+          <View style={styles.sheetHeader}>
+            <Text style={styles.sheetTitle}>Selecciona categoría</Text>
+            <TouchableOpacity onPress={() => setShowCategorySheet(false)}>
+              <Ionicons name="close" size={22} color="#94A3B8" />
+            </TouchableOpacity>
           </View>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.sheetGrid}
+          >
+            {allCategoryItems.map((item, index) => {
+              const isSelected = selectedCategory === item.value;
+              return (
+                <TouchableOpacity
+                  key={item.value}
+                  style={[
+                    styles.sheetItem,
+                    isSelected && styles.sheetItemSelected,
+                  ]}
+                  onPress={() => {
+                    setSelectedCategory(item.value);
+                    setShowCategorySheet(false);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <View
+                    style={[
+                      styles.sheetItemIconBox,
+                      isSelected && styles.sheetItemIconBoxSelected,
+                    ]}
+                  >
+                    <Ionicons
+                      name={item.icon as any}
+                      size={22}
+                      color={isSelected ? PRIMARY : "#64748B"}
+                    />
+                  </View>
+                  {isSelected ? (
+                    <View style={styles.sheetCheckBadge}>
+                      <Ionicons name="checkmark" size={12} color="#fff" />
+                    </View>
+                  ) : null}
+                  <Text
+                    style={[
+                      styles.sheetItemLabel,
+                      isSelected && styles.sheetItemLabelSelected,
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {item.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
         </View>
-      </Modal>
+      </AnimatedBottomSheet>
 
       <Modal
         visible={showIconPicker}
@@ -510,14 +501,6 @@ const styles = StyleSheet.create({
   },
 
   // --- Category bottom sheet ---
-  sheetOverlay: {
-    flex: 1,
-    justifyContent: "flex-end",
-  },
-  sheetBackdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.4)",
-  },
   sheetContainer: {
     backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 24,
