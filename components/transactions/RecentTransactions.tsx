@@ -1,6 +1,6 @@
 import { PRIMARY_COLOR, SECONDARY_COLOR } from "@/constants/theme2";
 import { Transaction, useTransactions } from "@/context/TransactionsContext";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { LucideIcon } from "../ui/icons/LucideIcon";
 import React from "react";
 import {
   ActivityIndicator,
@@ -42,8 +42,8 @@ const TransactionItem: React.FC<{
         ]}
       >
         {categoryIcon ? (
-          <Ionicons
-            name={categoryIcon as any}
+          <LucideIcon
+            name={categoryIcon}
             size={20}
             color={isExpense ? "#E53935" : "#2E7D32"}
           />

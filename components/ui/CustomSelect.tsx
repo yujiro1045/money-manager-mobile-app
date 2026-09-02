@@ -1,6 +1,6 @@
 import React, { ReactNode, useState } from "react";
 import { Modal, Pressable, StyleSheet, Text, View, ScrollView } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { LucideIcon } from "./icons/LucideIcon";
 
 type SelectSize = "small" | "medium" | "large";
 
@@ -39,8 +39,8 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         <Text style={[styles.text, textSizes[size]]}>
           {value ?? placeholder}
         </Text>
-        <Ionicons
-          name={open ? "chevron-up" : "chevron-down"}
+        <LucideIcon
+          name={open ? "ChevronUp" : "ChevronDown"}
           size={20}
           color="#6B6FE0"
         />
@@ -58,7 +58,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                   if (React.isValidElement(child)) {
                     return React.cloneElement(child, {
                       onPress: () => {
-                        child.props.onPress?.();
+                        (child.props as { onPress?: () => void }).onPress?.();
                         handleSelect();
                       },
                     } as any);

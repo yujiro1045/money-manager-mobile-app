@@ -1,4 +1,4 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { LucideIcon } from "./icons/LucideIcon";
 import dayjs, { Dayjs } from "dayjs";
 import "dayjs/locale/es";
 import React, { useState } from "react";
@@ -69,7 +69,7 @@ const DatePickerModal: React.FC<DatePickerModalProps> = ({
           <View style={styles.header}>
             <Text style={styles.title}>Selecciona una fecha</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Ionicons name="close" size={24} color="#374151" />
+              <LucideIcon name="X" size={24} color="#374151" />
             </TouchableOpacity>
           </View>
 
@@ -80,7 +80,7 @@ const DatePickerModal: React.FC<DatePickerModalProps> = ({
                   onPress={handlePrevMonth}
                   style={styles.monthNav}
                 >
-                  <Ionicons name="chevron-back" size={24} color="#3B82F6" />
+                  <LucideIcon name="ChevronLeft" size={24} color="#3B82F6" />
                 </TouchableOpacity>
 
                 <Text style={styles.monthLabel}>
@@ -92,8 +92,8 @@ const DatePickerModal: React.FC<DatePickerModalProps> = ({
                   disabled={isCurrentMonth}
                   style={[styles.monthNav, !isCurrentMonth && { opacity: 0.5 }]}
                 >
-                  <Ionicons
-                    name="chevron-forward"
+                  <LucideIcon
+                    name="ChevronRight"
                     size={24}
                     color={isCurrentMonth ? "#D1D5DB" : "#3B82F6"}
                   />
@@ -151,7 +151,7 @@ const DatePickerModal: React.FC<DatePickerModalProps> = ({
                   setCurrentMonth(today);
                 }}
               >
-                <Ionicons name="today" size={20} color="#FFFFFF" />
+                <LucideIcon name="Calendar" size={20} color="#FFFFFF" />
                 <Text style={styles.todayButtonText}>Hoy</Text>
               </TouchableOpacity>
             </View>

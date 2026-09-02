@@ -1,7 +1,7 @@
 import { logoutUser } from "@/api/auth";
-import { BACKGROUND, CARD, MUTED, PRIMARY, PRIMARY_COLOR, TEXT } from "@/constants/theme2";
+import { BACKGROUND, CARD, MUTED, PRIMARY, TEXT } from "@/constants/theme2";
 import { useAuth } from "@/context/AuthContext";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { LucideIcon } from "@/components/ui/icons/LucideIcon";
 import { router } from "expo-router";
 import React from "react";
 import {
@@ -25,7 +25,7 @@ function getInitials(name: string | null): string {
 }
 
 type MenuItemProps = {
-  icon: keyof typeof Ionicons.glyphMap;
+  icon: string;
   label: string;
   value?: string;
   onPress?: () => void;
@@ -39,7 +39,7 @@ const MenuItem = ({ icon, label, value, onPress, danger }: MenuItemProps) => (
     activeOpacity={0.6}
   >
     <View style={[styles.menuIconBox, danger && { backgroundColor: "#FEE2E2" }]}>
-      <Ionicons
+      <LucideIcon
         name={icon}
         size={20}
         color={danger ? "#DC2626" : PRIMARY}
@@ -50,7 +50,7 @@ const MenuItem = ({ icon, label, value, onPress, danger }: MenuItemProps) => (
     </Text>
     <View style={styles.menuRight}>
       {value ? <Text style={styles.menuValue}>{value}</Text> : null}
-      <Ionicons name="chevron-forward" size={16} color="#CBD5E1" />
+      <LucideIcon name="ChevronRight" size={16} color="#CBD5E1" />
     </View>
   </TouchableOpacity>
 );
@@ -105,21 +105,21 @@ export default function Profile() {
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Configuración</Text>
             <MenuItem
-              icon="person-outline"
+              icon="User"
               label="Editar perfil"
               onPress={() => router.push("/profile/Edit")}
             />
             <View style={styles.divider} />
-            <MenuItem icon="language-outline" label="Lenguaje" value="Español" />
+            <MenuItem icon="Languages" label="Lenguaje" value="Español" />
           </View>
 
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Soporte</Text>
-            <MenuItem icon="help-circle-outline" label="Centro de ayuda" />
+            <MenuItem icon="BadgeQuestionMark" label="Centro de ayuda" />
           </View>
 
           <MenuItem
-            icon="log-out-outline"
+            icon="LogOut"
             label="Cerrar sesión"
             onPress={handleLogout}
             danger

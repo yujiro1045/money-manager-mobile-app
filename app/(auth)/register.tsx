@@ -1,6 +1,6 @@
 import { registerUser } from "@/api/auth";
 import { RegisterIcon } from "@/components/ui/icons/icons";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { LucideIcon } from "@/components/ui/icons/LucideIcon";
 import { Link } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -128,8 +128,8 @@ export default function Register() {
                 onPress={() => setShowPassword((v) => !v)}
                 style={styles.eyeButton}
               >
-                <Ionicons
-                  name={showPassword ? "eye-outline" : "eye-off-outline"}
+                <LucideIcon
+                  name={showPassword ? "Eye" : "EyeOff"}
                   size={20}
                   color="#9CA3AF"
                 />
@@ -158,8 +158,8 @@ export default function Register() {
                 onPress={() => setShowConfirmPassword((v) => !v)}
                 style={styles.eyeButton}
               >
-                <Ionicons
-                  name={showConfirmPassword ? "eye-outline" : "eye-off-outline"}
+                <LucideIcon
+                  name={showConfirmPassword ? "Eye" : "EyeOff"}
                   size={20}
                   color="#9CA3AF"
                 />

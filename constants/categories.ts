@@ -1,35 +1,35 @@
-import { IONICONS_CATEGORIES } from "@/components/ui/icons/ioniconsCategories";
+import { LUCIDE_CATEGORIES } from "@/components/ui/icons/lucideCategories";
 
 export type QuickCategory = {
   label: string;
-  icon: (typeof IONICONS_CATEGORIES)[number];
+  icon: (typeof LUCIDE_CATEGORIES)[number];
   type: "income" | "expense";
 };
 
 export const DEFAULT_CATEGORIES: QuickCategory[] = [
-  { label: "Alimentación", icon: "restaurant", type: "expense" },
-  { label: "Transporte", icon: "bus", type: "expense" },
-  { label: "Salud", icon: "medical", type: "expense" },
-  { label: "Arriendo", icon: "home", type: "expense" },
-  { label: "Servicios", icon: "flash", type: "expense" },
-  { label: "Educación", icon: "school", type: "expense" },
-  { label: "Ropa", icon: "shirt", type: "expense" },
-  { label: "Entretenimiento", icon: "film", type: "expense" },
-  { label: "Restaurantes", icon: "pizza", type: "expense" },
-  { label: "Gimnasio", icon: "fitness", type: "expense" },
-  { label: "Mascotas", icon: "paw", type: "expense" },
-  { label: "Deudas", icon: "card", type: "expense" },
-  { label: "Internet", icon: "wifi", type: "expense" },
-  { label: "Celular", icon: "phone-portrait", type: "expense" },
-  { label: "Salario", icon: "briefcase", type: "income" },
-  { label: "Freelance", icon: "laptop", type: "income" },
-  { label: "Negocio", icon: "storefront", type: "income" },
-  { label: "Inversión", icon: "trending-up", type: "income" },
-  { label: "Alquiler", icon: "key", type: "income" },
-  { label: "Regalo", icon: "gift", type: "income" },
-  { label: "Bonificación", icon: "star", type: "income" },
-  { label: "Venta", icon: "pricetag", type: "income" },
-  { label: "Reembolso", icon: "refresh", type: "income" },
+  { label: "Alimentación", icon: "Utensils", type: "expense" },
+  { label: "Transporte", icon: "Bus", type: "expense" },
+  { label: "Salud", icon: "Stethoscope", type: "expense" },
+  { label: "Arriendo", icon: "House", type: "expense" },
+  { label: "Servicios", icon: "Zap", type: "expense" },
+  { label: "Educación", icon: "GraduationCap", type: "expense" },
+  { label: "Ropa", icon: "Shirt", type: "expense" },
+  { label: "Entretenimiento", icon: "Clapperboard", type: "expense" },
+  { label: "Restaurantes", icon: "Pizza", type: "expense" },
+  { label: "Gimnasio", icon: "Dumbbell", type: "expense" },
+  { label: "Mascotas", icon: "PawPrint", type: "expense" },
+  { label: "Deudas", icon: "CreditCard", type: "expense" },
+  { label: "Internet", icon: "Wifi", type: "expense" },
+  { label: "Celular", icon: "Smartphone", type: "expense" },
+  { label: "Salario", icon: "Briefcase", type: "income" },
+  { label: "Freelance", icon: "Laptop", type: "income" },
+  { label: "Negocio", icon: "Store", type: "income" },
+  { label: "Inversión", icon: "TrendingUp", type: "income" },
+  { label: "Alquiler", icon: "Key", type: "income" },
+  { label: "Regalo", icon: "Gift", type: "income" },
+  { label: "Bonificación", icon: "Star", type: "income" },
+  { label: "Venta", icon: "Tag", type: "income" },
+  { label: "Reembolso", icon: "RefreshCw", type: "income" },
 ];
 
 export const ALL_CATEGORIES = DEFAULT_CATEGORIES;

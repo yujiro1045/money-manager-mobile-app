@@ -1,5 +1,4 @@
-import Foundation from "@expo/vector-icons/Foundation";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { LucideIcon } from "./LucideIcon";
 
 export const LoginIcon = ({
   size = 24,
@@ -7,7 +6,7 @@ export const LoginIcon = ({
 }: {
   size?: number;
   color: string;
-}) => <Foundation name="dollar" size={size} color={color} />;
+}) => <LucideIcon name="CircleDollarSign" size={size} color={color} />;
 
 export const RegisterIcon = ({
   size = 24,
@@ -15,4 +14,4 @@ export const RegisterIcon = ({
 }: {
   size?: number;
   color: string;
-}) => <Ionicons name="bar-chart" size={size} color={color} />;
+}) => <LucideIcon name="ChartColumn" size={size} color={color} />;

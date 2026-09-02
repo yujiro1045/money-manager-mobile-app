@@ -1,5 +1,5 @@
 import { useQuickCategories } from "@/hooks/useQuickCategories";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { LucideIcon } from "../ui/icons/LucideIcon";
 import {
   ScrollView,
   StyleSheet,
@@ -44,8 +44,8 @@ const QuickCategories = () => {
           { backgroundColor: cat.type === "expense" ? "#FFF0F0" : "#F0FFF4" },
         ]}
       >
-        <Ionicons
-          name={cat.icon as any}
+        <LucideIcon
+          name={cat.icon}
           size={26}
           color={cat.type === "expense" ? "#E53935" : "#2E7D32"}
         />
@@ -88,7 +88,7 @@ const QuickCategories = () => {
             .map((cat, i) => renderCategory(cat, i + 4))}
           <TouchableOpacity style={styles.item} onPress={openAll}>
             <View style={[styles.iconBox, { backgroundColor: "#F3F4F6" }]}>
-              <Ionicons name="ellipsis-horizontal" size={26} color="#6B7280" />
+              <LucideIcon name="Ellipsis" size={26} color="#6B7280" />
             </View>
             <Text style={styles.itemLabel}>Ver todo</Text>
           </TouchableOpacity>
@@ -101,7 +101,7 @@ const QuickCategories = () => {
           <View style={styles.sheetHeader}>
             <Text style={styles.sheetTitle}>Todas las categorías</Text>
             <TouchableOpacity onPress={closeAll} style={styles.closeButton}>
-              <Ionicons name="close" size={24} color="#374151" />
+              <LucideIcon name="X" size={24} color="#374151" />
             </TouchableOpacity>
           </View>
 

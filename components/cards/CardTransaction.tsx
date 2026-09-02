@@ -1,6 +1,5 @@
 import { useTransactions } from "@/context/TransactionsContext";
 import { PRIMARY, TEXT } from "@/constants/theme2";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import React, { useEffect, useState } from "react";
 import {
   FlatList,
@@ -15,7 +14,8 @@ import {
 } from "react-native";
 import AnimatedBottomSheet from "../ui/AnimatedBottomSheet";
 import CustomModal from "../ui/CustomModal";
-import { IONICONS_CATEGORIES } from "../ui/icons/ioniconsCategories";
+import { LUCIDE_CATEGORIES } from "../ui/icons/lucideCategories";
+import { LucideIcon } from "../ui/icons/LucideIcon";
 
 type CategoryItem = {
   label: string;
@@ -24,10 +24,10 @@ type CategoryItem = {
 };
 
 const DEFAULT_CATEGORIES: CategoryItem[] = [
-  { label: "General", value: "General", icon: "home" },
+  { label: "General", value: "General", icon: "House" },
 ];
 
-const ICON_LIST = IONICONS_CATEGORIES;
+const ICON_LIST = LUCIDE_CATEGORIES;
 
 type Props = {
   onSubmit: VoidFunction;
@@ -48,8 +48,8 @@ export default function CardTransaction({
   const [amount, setAmount] = useState("");
   const [newCategory, setNewCategory] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedIcon, setSelectedIcon] = useState<string>("home");
-  const [pickerIcon, setPickerIcon] = useState<string>("home");
+  const [selectedIcon, setSelectedIcon] = useState<string>("House");
+  const [pickerIcon, setPickerIcon] = useState<string>("House");
   const [openModal, setOpenModal] = useState(false);
   const [showIconPicker, setShowIconPicker] = useState(false);
   const [showCategorySheet, setShowCategorySheet] = useState(false);
@@ -73,7 +73,7 @@ export default function CardTransaction({
       .map((c) => ({
         label: c.name,
         value: c.name,
-        icon: c.icon || "home",
+        icon: c.icon || "House",
       })),
   ];
 
@@ -87,7 +87,7 @@ export default function CardTransaction({
       allCategoryItems.push({
         label: defaultCategory,
         value: defaultCategory,
-        icon: defaultIcon || "home",
+        icon: defaultIcon || "House",
       });
     }
   }
@@ -101,7 +101,7 @@ export default function CardTransaction({
     await addCategory(newCategory.trim(), pickerIcon);
     setSelectedCategory(newCategory.trim());
     setNewCategory("");
-    setPickerIcon("home");
+    setPickerIcon("House");
     setShowIconPicker(false);
   };
 
@@ -179,8 +179,8 @@ export default function CardTransaction({
           {selectedCategoryData ? (
             <>
               <View style={styles.selectIconBox}>
-                <Ionicons
-                  name={selectedCategoryData.icon as any}
+                <LucideIcon
+                  name={selectedCategoryData.icon}
                   size={20}
                   color={PRIMARY}
                 />
@@ -192,14 +192,14 @@ export default function CardTransaction({
           ) : (
             <>
               <View style={styles.selectIconBoxPlaceholder}>
-                <Ionicons name="folder-open-outline" size={18} color="#94A3B8" />
+                <LucideIcon name="FolderOpen" size={18} color="#94A3B8" />
               </View>
               <Text style={styles.selectPlaceholder}>
                 Selecciona categoría
               </Text>
             </>
           )}
-          <Ionicons name="chevron-down" size={18} color="#94A3B8" />
+          <LucideIcon name="ChevronDown" size={18} color="#94A3B8" />
         </TouchableOpacity>
 
         <View style={styles.inputCategory}>
@@ -207,7 +207,7 @@ export default function CardTransaction({
             style={styles.iconPickerButton}
             onPress={() => setShowIconPicker(true)}
           >
-            <Ionicons name={pickerIcon as any} size={24} color={PRIMARY} />
+            <LucideIcon name={pickerIcon} size={24} color={PRIMARY} />
           </TouchableOpacity>
           <TextInput
             placeholder="Nueva categoría"
@@ -251,7 +251,7 @@ export default function CardTransaction({
           <View style={styles.sheetHeader}>
             <Text style={styles.sheetTitle}>Selecciona categoría</Text>
             <TouchableOpacity onPress={() => setShowCategorySheet(false)}>
-              <Ionicons name="close" size={22} color="#94A3B8" />
+              <LucideIcon name="X" size={22} color="#94A3B8" />
             </TouchableOpacity>
           </View>
           <ScrollView
@@ -279,15 +279,15 @@ export default function CardTransaction({
                       isSelected && styles.sheetItemIconBoxSelected,
                     ]}
                   >
-                    <Ionicons
-                      name={item.icon as any}
+                    <LucideIcon
+                      name={item.icon}
                       size={22}
                       color={isSelected ? PRIMARY : "#64748B"}
                     />
                   </View>
                   {isSelected ? (
                     <View style={styles.sheetCheckBadge}>
-                      <Ionicons name="checkmark" size={12} color="#fff" />
+                      <LucideIcon name="Check" size={12} color="#fff" />
                     </View>
                   ) : null}
                   <Text
@@ -338,8 +338,8 @@ export default function CardTransaction({
                     setShowIconPicker(false);
                   }}
                 >
-                  <Ionicons
-                    name={item as any}
+                  <LucideIcon
+                    name={item}
                     size={24}
                     color={pickerIcon === item ? "#3B82F6" : "#6B7280"}
                   />

@@ -3,7 +3,7 @@ import GoogleSignInButton from "@/components/auth/GoogleSigInButton";
 import { LoginIcon } from "@/components/ui/icons/icons";
 import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import { useLogin } from "@/hooks/useLogin";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { LucideIcon } from "@/components/ui/icons/LucideIcon";
 import { Link } from "expo-router";
 import React from "react";
 import {
@@ -98,8 +98,8 @@ export default function Login() {
                 onPress={() => setShowPassword((v) => !v)}
                 style={styles.eyeButton}
               >
-                <Ionicons
-                  name={showPassword ? "eye-outline" : "eye-off-outline"}
+                <LucideIcon
+                  name={showPassword ? "Eye" : "EyeOff"}
                   size={20}
                   color="#9CA3AF"
                 />

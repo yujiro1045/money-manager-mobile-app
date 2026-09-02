@@ -1,4 +1,4 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { LucideIcon } from "../ui/icons/LucideIcon";
 import React from "react";
 import {
   ActivityIndicator,
@@ -47,7 +47,7 @@ export default function ForgotPasswordModal({
               <View style={styles.header}>
                 <Text style={styles.title}>Recuperar contraseña</Text>
                 <TouchableOpacity onPress={onClose}>
-                  <Ionicons name="close" size={22} color="#6B7280" />
+                  <LucideIcon name="X" size={22} color="#6B7280" />
                 </TouchableOpacity>
               </View>
 
@@ -91,7 +91,7 @@ export default function ForgotPasswordModal({
           ) : (
             <>
               <View style={styles.successIcon}>
-                <Ionicons name="checkmark-circle" size={52} color="#3669C9" />
+                <LucideIcon name="CircleCheck" size={52} color="#3669C9" />
               </View>
               <Text style={[styles.title, { textAlign: "center" }]}>
                 ¡Correo enviado!

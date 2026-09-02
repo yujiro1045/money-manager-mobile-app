@@ -1,7 +1,7 @@
 import WeeklyCalendar from "@/components/cards/WeeklyCalendar";
 import { Period, useBalanceByPeriod } from "@/hooks/useBalanceByPeriod";
 import { useWeeklyCalendar } from "@/hooks/useWeeklyCalendar";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { LucideIcon } from "../ui/icons/LucideIcon";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -99,8 +99,8 @@ const CardBalance = () => {
       ) : (
         <View style={styles.navRow}>
           <TouchableOpacity style={styles.navButton} onPress={goBack}>
-            <Ionicons
-              name="chevron-back"
+            <LucideIcon
+              name="ChevronLeft"
               size={20}
               color="rgba(255,255,255,0.8)"
             />
@@ -111,8 +111,8 @@ const CardBalance = () => {
             onPress={goForward}
             disabled={isCurrentPeriod}
           >
-            <Ionicons
-              name="chevron-forward"
+            <LucideIcon
+              name="ChevronRight"
               size={20}
               color={
                 isCurrentPeriod
@@ -137,7 +137,7 @@ const CardBalance = () => {
           <View
             style={[styles.dot, { backgroundColor: "rgba(46,213,115,0.2)" }]}
           >
-            <Ionicons name="arrow-up-circle" size={22} color="#4AE588" />
+            <LucideIcon name="CircleArrowUp" size={22} color="#4AE588" />
           </View>
           <View style={styles.statInfo}>
             <Text style={styles.statLabel} numberOfLines={2}>
@@ -153,7 +153,7 @@ const CardBalance = () => {
           <View
             style={[styles.dot, { backgroundColor: "rgba(255,107,118,0.2)" }]}
           >
-            <Ionicons name="arrow-down-circle" size={22} color="#FF6B76" />
+            <LucideIcon name="CircleArrowDown" size={22} color="#FF6B76" />
           </View>
           <View style={styles.statInfo}>
             <Text style={styles.statLabel} numberOfLines={2}>

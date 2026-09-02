@@ -1,3 +1,4 @@
+import { LinearGradient } from "expo-linear-gradient";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -11,7 +12,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 
 const ICON_SIZE = 200;
-const MIN_VISIBLE_TIME = 600;
+const MIN_VISIBLE_TIME = 2000;
 const FADE_DURATION = 300;
 
 export function SplashLoading() {
@@ -47,12 +48,15 @@ export function SplashLoading() {
   const isDark = colorScheme === "dark";
 
   return (
-    <Animated.View
-      style={[
-        styles.overlay,
-        { backgroundColor: isDark ? "#000000" : "#ffffff", opacity },
-      ]}
-    >
+    <Animated.View style={[styles.overlay, { opacity }]}>
+      <LinearGradient
+        colors={
+          isDark
+            ? ["#000000", "#0A0A0A"]
+            : ["#FFFFFF", "#F1F5F9"]
+        }
+        style={StyleSheet.absoluteFill}
+      />
       <Image
         source={require("@/assets/images/splash-icon.png")}
         style={styles.icon}

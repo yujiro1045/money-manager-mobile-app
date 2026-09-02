@@ -1,4 +1,4 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { LucideIcon } from "../ui/icons/LucideIcon";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
 import React from "react";
@@ -33,8 +33,8 @@ export default function WeeklyCalendar({
       {/* Navegación de semana */}
       <View style={styles.navRow}>
         <TouchableOpacity onPress={onPrevWeek}>
-          <Ionicons
-            name="chevron-back"
+          <LucideIcon
+            name="ChevronLeft"
             size={18}
             color="rgba(255,255,255,0.8)"
           />
@@ -45,8 +45,8 @@ export default function WeeklyCalendar({
         </Text>
 
         <TouchableOpacity onPress={onNextWeek} disabled={isCurrentWeek}>
-          <Ionicons
-            name="chevron-forward"
+          <LucideIcon
+            name="ChevronRight"
             size={18}
             color={
               isCurrentWeek ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.8)"

@@ -7,7 +7,7 @@ import {
   TYPE_FILTERS,
   useTransactionList,
 } from "@/hooks/useTrasactionList";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { LucideIcon } from "@/components/ui/icons/LucideIcon";
 import { useState } from "react";
 import {
   FlatList,
@@ -87,7 +87,7 @@ export default function Transactions() {
       style={styles.deleteAction}
       onPress={() => openConfirmWithTx(item)}
     >
-      <Ionicons name="trash-outline" size={22} color="#FFFFFF" />
+      <LucideIcon name="Trash2" size={22} color="#FFFFFF" />
       <Text style={styles.deleteActionText}>Eliminar</Text>
     </TouchableOpacity>
   );
@@ -97,7 +97,7 @@ export default function Transactions() {
       style={styles.editAction}
       onPress={() => handleEditTransaction(item)}
     >
-      <Ionicons name="pencil-outline" size={22} color="#FFFFFF" />
+      <LucideIcon name="Pencil" size={22} color="#FFFFFF" />
       <Text style={styles.editActionText}>Editar</Text>
     </TouchableOpacity>
   );
@@ -122,8 +122,8 @@ export default function Transactions() {
             ]}
           >
             {categoryIcon ? (
-              <Ionicons
-                name={categoryIcon as any}
+              <LucideIcon
+                name={categoryIcon}
                 size={20}
                 color={isExpense ? "#E53935" : "#2E7D32"}
               />
@@ -202,13 +202,13 @@ export default function Transactions() {
               style={styles.sortButton}
               onPress={toggleSortOrder}
             >
-              <Ionicons
+              <LucideIcon
                 name={
                   sortOrder === "desc"
-                    ? "arrow-down"
+                    ? "ArrowDown"
                     : sortOrder === "asc"
-                      ? "arrow-up"
-                      : "time-outline"
+                      ? "ArrowUp"
+                      : "Clock"
                 }
                 size={14}
                 color={PRIMARY}

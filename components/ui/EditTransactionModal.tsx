@@ -1,5 +1,5 @@
 import { Transaction } from "@/hooks/useTrasactionList";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { LucideIcon } from "./icons/LucideIcon";
 import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
@@ -94,7 +94,7 @@ export default function EditTransactionModal({
           <View style={styles.header}>
             <Text style={styles.title}>Editar Transacción</Text>
             <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={24} color="#374151" />
+              <LucideIcon name="X" size={24} color="#374151" />
             </TouchableOpacity>
           </View>
 
