@@ -37,7 +37,9 @@ const formatDate = (date: any) => {
 
 export default function Transactions() {
   const {
-    filteredTransactions,
+    visibleTransactions,
+    hasMore,
+    handleLoadMore,
     modalType,
     filterType,
     sortOrder,
@@ -167,7 +169,7 @@ export default function Transactions() {
   return (
     <SafeAreaView style={styles.safe}>
       <FlatList
-        data={filteredTransactions}
+        data={visibleTransactions}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         ListHeaderComponent={() => (
@@ -226,6 +228,16 @@ export default function Transactions() {
         ListEmptyComponent={() => (
           <Text style={styles.emptyText}>Aún no hay transacciones</Text>
         )}
+        ListFooterComponent={() =>
+          hasMore ? (
+            <TouchableOpacity
+              style={styles.loadMore}
+              onPress={handleLoadMore}
+            >
+              <Text style={styles.loadMoreText}>Cargar más</Text>
+            </TouchableOpacity>
+          ) : null
+        }
         contentContainerStyle={styles.listContent}
       />
 
@@ -378,6 +390,19 @@ const styles = StyleSheet.create({
     marginTop: 40,
     color: MUTED,
     fontSize: 14,
+  },
+  loadMore: {
+    backgroundColor: PRIMARY,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+    borderRadius: 14,
+    marginBottom: 12,
+  },
+  loadMoreText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "700",
   },
   deleteAction: {
     backgroundColor: "#C93545",

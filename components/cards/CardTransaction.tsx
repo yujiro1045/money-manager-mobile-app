@@ -1,9 +1,11 @@
-import { useTransactions } from "@/context/TransactionsContext";
 import { PRIMARY, TEXT } from "@/constants/theme2";
-import React, { useEffect, useState } from "react";
+import { useTransactions } from "@/context/TransactionsContext";
+import { useState } from "react";
 import {
+  Dimensions,
   FlatList,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Switch,
@@ -12,10 +14,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import AnimatedBottomSheet from "../ui/AnimatedBottomSheet";
 import CustomModal from "../ui/CustomModal";
 import { LUCIDE_CATEGORIES } from "../ui/icons/lucideCategories";
 import { LucideIcon } from "../ui/icons/LucideIcon";
+
+const SCREEN_HEIGHT = Dimensions.get("window").height;
 
 type CategoryItem = {
   label: string;
@@ -44,27 +49,20 @@ export default function CardTransaction({
 }: Props) {
   const { addCategory, categories, addTransaction } = useTransactions();
 
-  const [isIncome, setIsIncome] = useState(true);
+  const [isIncome, setIsIncome] = useState(
+    defaultType ? defaultType === "income" : true,
+  );
   const [amount, setAmount] = useState("");
   const [newCategory, setNewCategory] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedIcon, setSelectedIcon] = useState<string>("House");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(
+    defaultCategory ?? null,
+  );
+  const selectedIcon = defaultIcon ?? "House";
   const [pickerIcon, setPickerIcon] = useState<string>("House");
   const [openModal, setOpenModal] = useState(false);
   const [showIconPicker, setShowIconPicker] = useState(false);
   const [showCategorySheet, setShowCategorySheet] = useState(false);
-
-  useEffect(() => {
-    if (defaultCategory) setSelectedCategory(defaultCategory);
-  }, [defaultCategory]);
-
-  useEffect(() => {
-    if (defaultType) setIsIncome(defaultType === "income");
-  }, [defaultType]);
-
-  useEffect(() => {
-    if (defaultIcon) setSelectedIcon(defaultIcon);
-  }, [defaultIcon]);
+  const [categorySearch, setCategorySearch] = useState("");
 
   const allCategoryItems: CategoryItem[] = [
     ...DEFAULT_CATEGORIES,
@@ -91,6 +89,12 @@ export default function CardTransaction({
       });
     }
   }
+
+  const filteredCategoryItems = categorySearch.trim()
+    ? allCategoryItems.filter((item) =>
+        item.label.toLowerCase().includes(categorySearch.trim().toLowerCase()),
+      )
+    : allCategoryItems;
 
   const selectedCategoryData = selectedCategory
     ? allCategoryItems.find((c) => c.value === selectedCategory)
@@ -194,9 +198,7 @@ export default function CardTransaction({
               <View style={styles.selectIconBoxPlaceholder}>
                 <LucideIcon name="FolderOpen" size={18} color="#94A3B8" />
               </View>
-              <Text style={styles.selectPlaceholder}>
-                Selecciona categoría
-              </Text>
+              <Text style={styles.selectPlaceholder}>Selecciona categoría</Text>
             </>
           )}
           <LucideIcon name="ChevronDown" size={18} color="#94A3B8" />
@@ -246,64 +248,109 @@ export default function CardTransaction({
         visible={showCategorySheet}
         onClose={() => setShowCategorySheet(false)}
       >
-        <View style={styles.sheetContainer}>
-          <View style={styles.sheetHandle} />
-          <View style={styles.sheetHeader}>
-            <Text style={styles.sheetTitle}>Selecciona categoría</Text>
-            <TouchableOpacity onPress={() => setShowCategorySheet(false)}>
-              <LucideIcon name="X" size={22} color="#94A3B8" />
-            </TouchableOpacity>
-          </View>
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.sheetGrid}
-          >
-            {allCategoryItems.map((item, index) => {
-              const isSelected = selectedCategory === item.value;
-              return (
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.sheetContainer}
+        >
+          <View style={styles.sheetContainer}>
+            <View style={styles.sheetHandle} />
+            <View style={styles.sheetHeader}>
+              <Text style={styles.sheetTitle}>Selecciona categoría</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setCategorySearch("");
+                  setShowCategorySheet(false);
+                }}
+                style={styles.sheetClose}
+              >
+                <LucideIcon name="X" size={22} color="#94A3B8" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.searchBox}>
+              <LucideIcon name="Search" size={18} color="#94A3B8" />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Buscar categoría..."
+                placeholderTextColor="#9CA3AF"
+                value={categorySearch}
+                onChangeText={setCategorySearch}
+                autoCorrect={false}
+                returnKeyType="search"
+              />
+              {categorySearch.length > 0 && (
                 <TouchableOpacity
-                  key={item.value}
-                  style={[
-                    styles.sheetItem,
-                    isSelected && styles.sheetItemSelected,
-                  ]}
-                  onPress={() => {
-                    setSelectedCategory(item.value);
-                    setShowCategorySheet(false);
-                  }}
-                  activeOpacity={0.7}
+                  onPress={() => setCategorySearch("")}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
-                  <View
-                    style={[
-                      styles.sheetItemIconBox,
-                      isSelected && styles.sheetItemIconBoxSelected,
-                    ]}
-                  >
-                    <LucideIcon
-                      name={item.icon}
-                      size={22}
-                      color={isSelected ? PRIMARY : "#64748B"}
-                    />
-                  </View>
-                  {isSelected ? (
-                    <View style={styles.sheetCheckBadge}>
-                      <LucideIcon name="Check" size={12} color="#fff" />
-                    </View>
-                  ) : null}
-                  <Text
-                    style={[
-                      styles.sheetItemLabel,
-                      isSelected && styles.sheetItemLabelSelected,
-                    ]}
-                    numberOfLines={1}
-                  >
-                    {item.label}
-                  </Text>
+                  <LucideIcon name="X" size={16} color="#94A3B8" />
                 </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        </View>
+              )}
+            </View>
+
+            {filteredCategoryItems.length === 0 ? (
+              <View style={styles.sheetEmpty}>
+                <LucideIcon name="Search" size={28} color="#CBD5E1" />
+                <Text style={styles.sheetEmptyText}>
+                  Sin resultados para “{categorySearch.trim()}”
+                </Text>
+              </View>
+            ) : (
+              <ScrollView
+                style={{ maxHeight: SCREEN_HEIGHT * 0.55 }}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.sheetGrid}
+                keyboardShouldPersistTaps="handled"
+              >
+                {filteredCategoryItems.map((item, index) => {
+                  const isSelected = selectedCategory === item.value;
+                  return (
+                    <TouchableOpacity
+                      key={item.value}
+                      style={[
+                        styles.sheetItem,
+                        isSelected && styles.sheetItemSelected,
+                      ]}
+                      onPress={() => {
+                        setSelectedCategory(item.value);
+                        setCategorySearch("");
+                        setShowCategorySheet(false);
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <View
+                        style={[
+                          styles.sheetItemIconBox,
+                          isSelected && styles.sheetItemIconBoxSelected,
+                        ]}
+                      >
+                        <LucideIcon
+                          name={item.icon}
+                          size={22}
+                          color={isSelected ? PRIMARY : "#64748B"}
+                        />
+                      </View>
+                      {isSelected ? (
+                        <View style={styles.sheetCheckBadge}>
+                          <LucideIcon name="Check" size={12} color="#fff" />
+                        </View>
+                      ) : null}
+                      <Text
+                        style={[
+                          styles.sheetItemLabel,
+                          isSelected && styles.sheetItemLabelSelected,
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {item.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            )}
+          </View>
+        </KeyboardAvoidingView>
       </AnimatedBottomSheet>
 
       <Modal
@@ -502,13 +549,8 @@ const styles = StyleSheet.create({
 
   // --- Category bottom sheet ---
   sheetContainer: {
-    backgroundColor: "#FFFFFF",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
     paddingTop: 12,
     paddingHorizontal: 16,
-    paddingBottom: 32,
-    maxHeight: "80%",
   },
   sheetHandle: {
     width: 40,
@@ -529,6 +571,42 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "700",
     color: TEXT,
+  },
+  sheetClose: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#F3F4F6",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  searchBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "#F1F5F9",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    height: 44,
+    marginBottom: 16,
+    marginHorizontal: 4,
+    borderWidth: 1.5,
+    borderColor: "#E2E8F0",
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: TEXT,
+  },
+  sheetEmpty: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 36,
+    gap: 10,
+  },
+  sheetEmptyText: {
+    fontSize: 14,
+    color: "#94A3B8",
   },
   sheetGrid: {
     flexDirection: "row",

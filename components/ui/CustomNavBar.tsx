@@ -6,13 +6,11 @@ import {
   TransactionIcon,
 } from "@/components/ui/icons/tabs-icons";
 import { PRIMARY_COLOR, SECONDARY_COLOR } from "@/constants/theme2";
-import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { Text } from "@react-navigation/elements";
 import React, { useState } from "react";
 import {
   Modal,
-  ScrollView,
   StyleSheet,
+  Text,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -23,7 +21,26 @@ import NavBarNotch, {
   NOTCH_RADIUS,
 } from "./NavBarNotch";
 
-const CustomNavBar: React.FC<BottomTabBarProps> = ({ state, navigation }) => {
+type TabBarProps = {
+  state: {
+    index: number;
+    routes: {
+      key: string;
+      name: string;
+      params?: object;
+    }[];
+  };
+  navigation: {
+    emit: (event: {
+      type: string;
+      target: string;
+      canPreventDefault: boolean;
+    }) => { defaultPrevented: boolean };
+    navigate: (name: string, params?: object) => void;
+  };
+};
+
+const CustomNavBar: React.FC<TabBarProps> = ({ state, navigation }) => {
   const [showSheet, setShowSheet] = useState(false);
 
   const routes = state.routes;
@@ -93,8 +110,9 @@ const CustomNavBar: React.FC<BottomTabBarProps> = ({ state, navigation }) => {
         statusBarTranslucent
       >
         <KeyboardAwareScrollView
-          bottomOffset={62}
           contentContainerStyle={styles.keyboardView}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
           <TouchableOpacity
             style={styles.backdrop}
@@ -102,16 +120,11 @@ const CustomNavBar: React.FC<BottomTabBarProps> = ({ state, navigation }) => {
           />
           <View style={styles.sheet}>
             <View style={styles.sheetHandle} />
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-            >
-              <CardTransaction
-                onSubmit={() => {
-                  setShowSheet(false);
-                }}
-              />
-            </ScrollView>
+            <CardTransaction
+              onSubmit={() => {
+                setShowSheet(false);
+              }}
+            />
           </View>
         </KeyboardAwareScrollView>
       </Modal>
@@ -209,7 +222,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "rgba(0,0,0,0.5)",
   },
   sheet: {

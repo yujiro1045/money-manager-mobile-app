@@ -1,6 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
@@ -18,18 +18,19 @@ const FADE_DURATION = 300;
 export function SplashLoading() {
   const { loading } = useAuth();
   const colorScheme = useColorScheme();
-  const opacity = useRef(new Animated.Value(1)).current;
+  const opacity = useMemo(() => new Animated.Value(1), []);
   const [hidden, setHidden] = useState(false);
-  const mountedAt = useRef(Date.now()).current;
+  const mountedAtRef = useRef(0);
 
   useEffect(() => {
+    mountedAtRef.current = Date.now();
     SplashScreen.hideAsync();
   }, []);
 
   useEffect(() => {
     if (loading) return;
 
-    const remaining = MIN_VISIBLE_TIME - (Date.now() - mountedAt);
+    const remaining = MIN_VISIBLE_TIME - (Date.now() - mountedAtRef.current);
     const timer = setTimeout(() => {
       Animated.timing(opacity, {
         toValue: 0,
@@ -41,7 +42,7 @@ export function SplashLoading() {
     }, Math.max(0, remaining));
 
     return () => clearTimeout(timer);
-  }, [loading, mountedAt, opacity]);
+  }, [loading, opacity]);
 
   if (hidden) return null;
 
@@ -73,7 +74,7 @@ export function SplashLoading() {
 
 const styles = StyleSheet.create({
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: "center",
     justifyContent: "center",
     zIndex: 100,

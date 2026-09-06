@@ -21,7 +21,11 @@ export default function TabLayout() {
 
   return (
     <Tabs
-      tabBar={(props) => <CustomNavBar {...props} />}
+      tabBar={(props) => (
+        <CustomNavBar
+          {...(props as unknown as React.ComponentProps<typeof CustomNavBar>)}
+        />
+      )}
       screenOptions={{
         headerShown: false,
         sceneStyle: {

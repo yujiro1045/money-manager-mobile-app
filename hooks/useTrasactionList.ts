@@ -37,6 +37,9 @@ export const useTransactionList = () => {
   );
   const [filterType, setFilterType] = useState<FilterType>("all");
   const [sortOrder, setSortOrder] = useState<SortOrder>("default");
+  const [visibleCount, setVisibleCount] = useState(10);
+
+  const PAGE_SIZE = 10;
 
   useEffect(() => {
     if (!user) return;
@@ -70,6 +73,16 @@ export const useTransactionList = () => {
     return result;
   }, [transactions, filterType, sortOrder]);
 
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [filterType, sortOrder]);
+
+  const visibleTransactions = filteredTransactions.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredTransactions.length;
+
+  const handleLoadMore = () =>
+    setVisibleCount((prev) => prev + PAGE_SIZE);
+
   const closeAllModal = () => setModalType(null);
 
   const handleDeleteConfirmed = async () => {
@@ -100,6 +113,9 @@ export const useTransactionList = () => {
 
   return {
     filteredTransactions,
+    visibleTransactions,
+    hasMore,
+    handleLoadMore,
     selectedTx,
     modalType,
     filterType,

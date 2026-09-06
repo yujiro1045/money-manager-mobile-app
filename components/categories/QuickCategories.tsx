@@ -126,7 +126,6 @@ const QuickCategories = () => {
         <View style={styles.sheet}>
           <View style={styles.sheetHandle} />
           <KeyboardAwareScrollView
-            bottomOffset={62}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >

@@ -1,6 +1,6 @@
 import { Transaction } from "@/hooks/useTrasactionList";
 import { LucideIcon } from "./icons/LucideIcon";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -23,6 +23,9 @@ type EditTransactionModalProps = {
   ) => Promise<void>;
 };
 
+const formatAmount = (value: number): string =>
+  value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
 export default function EditTransactionModal({
   visible,
   transaction,
@@ -30,21 +33,23 @@ export default function EditTransactionModal({
   onSuccess,
   onUpdate,
 }: EditTransactionModalProps) {
-  const [amount, setAmount] = useState("");
-  const [name, setName] = useState("");
-  const [isIncome, setIsIncome] = useState(false);
+  const [amount, setAmount] = useState(() =>
+    transaction ? formatAmount(transaction.amount) : "",
+  );
+  const [name, setName] = useState(transaction?.category ?? "");
+  const [isIncome, setIsIncome] = useState(transaction?.type === "income");
+  const [prevVisible, setPrevVisible] = useState(visible);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    if (transaction) {
-      setAmount(
-        transaction.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."),
-      );
+  if (visible !== prevVisible) {
+    setPrevVisible(visible);
+    if (visible && transaction) {
+      setAmount(formatAmount(transaction.amount));
       setName(transaction.category);
       setIsIncome(transaction.type === "income");
     }
-  }, [transaction, visible]);
+  }
 
   const handleAmountChange = (text: string) => {
     const cleanedValue = text.replace(/\./g, "");
