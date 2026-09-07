@@ -6,10 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import {
-  KeyboardAvoidingView,
-  useReanimatedKeyboardAnimation,
-} from "react-native-keyboard-controller";
+import { useReanimatedKeyboardAnimation } from "react-native-keyboard-controller";
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -20,8 +17,7 @@ import Animated, {
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SHEET_MAX_HEIGHT = SCREEN_HEIGHT * 0.85;
-const SHEET_TOP_POSITION = SCREEN_HEIGHT - SHEET_MAX_HEIGHT;
-const SAFE_TOP_MARGIN = 10;
+const SAFE_TOP_MARGIN = 50;
 
 type Props = {
   visible: boolean;
@@ -37,6 +33,9 @@ export default function AnimatedBottomSheet({
   const [showModal, setShowModal] = useState(visible);
   const backdropOpacity = useSharedValue(0);
   const translateY = useSharedValue(30);
+
+  // 👇 altura real del sheet, medida en runtime (arranca con un estimado)
+  const sheetHeight = useSharedValue(SHEET_MAX_HEIGHT);
 
   const { height: keyboardHeight } = useReanimatedKeyboardAnimation();
 
@@ -65,11 +64,9 @@ export default function AnimatedBottomSheet({
   }));
 
   const sheetStyle = useAnimatedStyle(() => {
-    // El desplazamiento máximo permitido hacia arriba: que el borde superior
-    // del sheet no pase de SAFE_TOP_MARGIN desde el tope de la pantalla.
-    const maxUpwardShift = -(SHEET_TOP_POSITION - SAFE_TOP_MARGIN);
-
-    // clamp: usamos el shift del teclado, pero nunca más negativo que el límite
+    // Posición real del borde superior, basada en la altura MEDIDA, no asumida
+    const topPosition = SCREEN_HEIGHT - sheetHeight.value;
+    const maxUpwardShift = -(topPosition - SAFE_TOP_MARGIN);
     const clampedKeyboardShift = Math.max(keyboardHeight.value, maxUpwardShift);
 
     return {
@@ -93,13 +90,14 @@ export default function AnimatedBottomSheet({
             activeOpacity={1}
           />
         </Animated.View>
-        <Animated.View style={[styles.sheet, sheetStyle]}>
-          <KeyboardAvoidingView
-            behavior="padding"
-            style={styles.keyboardAvoiding}
-          >
-            {children}
-          </KeyboardAvoidingView>
+        <Animated.View
+          style={[styles.sheet, sheetStyle]}
+          onLayout={(e) => {
+            // se actualiza cada vez que el contenido cambia de alto
+            sheetHeight.value = e.nativeEvent.layout.height;
+          }}
+        >
+          {children}
         </Animated.View>
       </View>
     </Modal>
@@ -116,8 +114,8 @@ const styles = StyleSheet.create({
   },
   sheet: {
     backgroundColor: "#FFFFFF",
-  },
-  keyboardAvoiding: {
-    width: "100%",
+    maxHeight: SHEET_MAX_HEIGHT,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
   },
 });

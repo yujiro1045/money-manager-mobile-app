@@ -5,7 +5,6 @@ import {
   Dimensions,
   FlatList,
   Modal,
-  Platform,
   ScrollView,
   StyleSheet,
   Switch,
@@ -14,7 +13,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import AnimatedBottomSheet from "../ui/AnimatedBottomSheet";
 import CustomModal from "../ui/CustomModal";
 import { LUCIDE_CATEGORIES } from "../ui/icons/lucideCategories";
@@ -90,14 +88,18 @@ export default function CardTransaction({
     }
   }
 
+  const depudedCategoryItems = Array.from(
+    new Map(allCategoryItems.map((item) => [item.value, item])).values(),
+  );
+
   const filteredCategoryItems = categorySearch.trim()
-    ? allCategoryItems.filter((item) =>
+    ? depudedCategoryItems.filter((item) =>
         item.label.toLowerCase().includes(categorySearch.trim().toLowerCase()),
       )
-    : allCategoryItems;
+    : depudedCategoryItems;
 
   const selectedCategoryData = selectedCategory
-    ? allCategoryItems.find((c) => c.value === selectedCategory)
+    ? depudedCategoryItems.find((c) => c.value === selectedCategory)
     : null;
 
   const handleCreateCategory = async () => {
@@ -248,109 +250,104 @@ export default function CardTransaction({
         visible={showCategorySheet}
         onClose={() => setShowCategorySheet(false)}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={styles.sheetContainer}
-        >
-          <View style={styles.sheetContainer}>
-            <View style={styles.sheetHandle} />
-            <View style={styles.sheetHeader}>
-              <Text style={styles.sheetTitle}>Selecciona categoría</Text>
+        <View style={styles.sheetContainer}>
+          <View style={styles.sheetHandle} />
+          <View style={styles.sheetHeader}>
+            <Text style={styles.sheetTitle}>Selecciona categoría</Text>
+            <TouchableOpacity
+              onPress={() => {
+                setCategorySearch("");
+                setShowCategorySheet(false);
+              }}
+              style={styles.sheetClose}
+            >
+              <LucideIcon name="X" size={22} color="#94A3B8" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.searchBox}>
+            <LucideIcon name="Search" size={18} color="#94A3B8" />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Buscar categoría..."
+              placeholderTextColor="#9CA3AF"
+              value={categorySearch}
+              onChangeText={setCategorySearch}
+              autoCorrect={false}
+              returnKeyType="search"
+            />
+            {categorySearch.length > 0 && (
               <TouchableOpacity
-                onPress={() => {
-                  setCategorySearch("");
-                  setShowCategorySheet(false);
-                }}
-                style={styles.sheetClose}
+                onPress={() => setCategorySearch("")}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <LucideIcon name="X" size={22} color="#94A3B8" />
+                <LucideIcon name="X" size={16} color="#94A3B8" />
               </TouchableOpacity>
-            </View>
-
-            <View style={styles.searchBox}>
-              <LucideIcon name="Search" size={18} color="#94A3B8" />
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Buscar categoría..."
-                placeholderTextColor="#9CA3AF"
-                value={categorySearch}
-                onChangeText={setCategorySearch}
-                autoCorrect={false}
-                returnKeyType="search"
-              />
-              {categorySearch.length > 0 && (
-                <TouchableOpacity
-                  onPress={() => setCategorySearch("")}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                >
-                  <LucideIcon name="X" size={16} color="#94A3B8" />
-                </TouchableOpacity>
-              )}
-            </View>
-
-            {filteredCategoryItems.length === 0 ? (
-              <View style={styles.sheetEmpty}>
-                <LucideIcon name="Search" size={28} color="#CBD5E1" />
-                <Text style={styles.sheetEmptyText}>
-                  Sin resultados para “{categorySearch.trim()}”
-                </Text>
-              </View>
-            ) : (
-              <ScrollView
-                style={{ maxHeight: SCREEN_HEIGHT * 0.55 }}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.sheetGrid}
-                keyboardShouldPersistTaps="handled"
-              >
-                {filteredCategoryItems.map((item, index) => {
-                  const isSelected = selectedCategory === item.value;
-                  return (
-                    <TouchableOpacity
-                      key={item.value}
-                      style={[
-                        styles.sheetItem,
-                        isSelected && styles.sheetItemSelected,
-                      ]}
-                      onPress={() => {
-                        setSelectedCategory(item.value);
-                        setCategorySearch("");
-                        setShowCategorySheet(false);
-                      }}
-                      activeOpacity={0.7}
-                    >
-                      <View
-                        style={[
-                          styles.sheetItemIconBox,
-                          isSelected && styles.sheetItemIconBoxSelected,
-                        ]}
-                      >
-                        <LucideIcon
-                          name={item.icon}
-                          size={22}
-                          color={isSelected ? PRIMARY : "#64748B"}
-                        />
-                      </View>
-                      {isSelected ? (
-                        <View style={styles.sheetCheckBadge}>
-                          <LucideIcon name="Check" size={12} color="#fff" />
-                        </View>
-                      ) : null}
-                      <Text
-                        style={[
-                          styles.sheetItemLabel,
-                          isSelected && styles.sheetItemLabelSelected,
-                        ]}
-                        numberOfLines={1}
-                      >
-                        {item.label}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
             )}
           </View>
-        </KeyboardAvoidingView>
+
+          {filteredCategoryItems.length === 0 ? (
+            <View style={styles.sheetEmpty}>
+              <LucideIcon name="Search" size={28} color="#CBD5E1" />
+              <Text style={styles.sheetEmptyText}>
+                Sin resultados para “{categorySearch.trim()}”
+              </Text>
+            </View>
+          ) : (
+            <ScrollView
+              style={{ maxHeight: SCREEN_HEIGHT * 0.55 }}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.sheetGrid}
+              keyboardShouldPersistTaps="handled"
+            >
+              {filteredCategoryItems.map((item, index) => {
+                const isSelected = selectedCategory === item.value;
+                return (
+                  <TouchableOpacity
+                    key={item.value}
+                    style={[
+                      styles.sheetItem,
+                      isSelected && styles.sheetItemSelected,
+                    ]}
+                    onPress={() => {
+                      setSelectedCategory(item.value);
+                      setCategorySearch("");
+                      setShowCategorySheet(false);
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <View
+                      style={[
+                        styles.sheetItemIconBox,
+                        isSelected && styles.sheetItemIconBoxSelected,
+                      ]}
+                    >
+                      <LucideIcon
+                        name={item.icon}
+                        size={22}
+                        color={isSelected ? PRIMARY : "#64748B"}
+                      />
+                    </View>
+                    {isSelected ? (
+                      <View style={styles.sheetCheckBadge}>
+                        <LucideIcon name="Check" size={12} color="#fff" />
+                      </View>
+                    ) : null}
+                    <Text
+                      style={[
+                        styles.sheetItemLabel,
+                        isSelected && styles.sheetItemLabelSelected,
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {item.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          )}
+        </View>
       </AnimatedBottomSheet>
 
       <Modal
@@ -437,7 +434,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 
-  // --- Select trigger ---
   selectTrigger: {
     flexDirection: "row",
     alignItems: "center",
@@ -482,7 +478,6 @@ const styles = StyleSheet.create({
     color: "#94A3B8",
   },
 
-  // --- Create category ---
   inputCategory: {
     flexDirection: "row",
     alignItems: "center",
@@ -522,7 +517,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 
-  // --- Amount ---
   input: {
     backgroundColor: "#F8FAFC",
     paddingHorizontal: 16,
@@ -535,7 +529,6 @@ const styles = StyleSheet.create({
     color: TEXT,
   },
 
-  // --- Add button ---
   button: {
     backgroundColor: "#1F2A5A",
     padding: 14,
@@ -547,7 +540,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
-  // --- Category bottom sheet ---
   sheetContainer: {
     paddingTop: 12,
     paddingHorizontal: 16,
@@ -667,7 +659,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
-  // --- Icon picker ---
   iconPickerContainer: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
