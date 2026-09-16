@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Animated, { ZoomIn, ZoomOut } from "react-native-reanimated";
 import AnimatedBottomSheet from "../ui/AnimatedBottomSheet";
 import CustomModal from "../ui/CustomModal";
 import { LUCIDE_CATEGORIES } from "../ui/icons/lucideCategories";
@@ -45,7 +46,8 @@ export default function CardTransaction({
   defaultIcon,
   onSubmit,
 }: Props) {
-  const { addCategory, categories, addTransaction } = useTransactions();
+  const { addCategory, categories, addTransaction, deleteCategory } =
+    useTransactions();
 
   const [isIncome, setIsIncome] = useState(
     defaultType ? defaultType === "income" : true,
@@ -61,6 +63,13 @@ export default function CardTransaction({
   const [showIconPicker, setShowIconPicker] = useState(false);
   const [showCategorySheet, setShowCategorySheet] = useState(false);
   const [categorySearch, setCategorySearch] = useState("");
+  const [editMode, setEditMode] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<CategoryItem | null>(
+    null,
+  );
+  const [blockedDeleteMessage, setBlockedDeleteMessage] = useState<
+    string | null
+  >(null);
 
   const allCategoryItems: CategoryItem[] = [
     ...DEFAULT_CATEGORIES,
@@ -120,6 +129,22 @@ export default function CardTransaction({
 
     const formatted = cleanedValue.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     setAmount(formatted);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!categoryToDelete) return;
+    try {
+      await deleteCategory(categoryToDelete.value);
+      if (selectedCategory === categoryToDelete.value) {
+        setSelectedCategory(null);
+      }
+    } catch (err: any) {
+      setBlockedDeleteMessage(
+        err?.message || "No se pudo eliminar la categoría.",
+      );
+    } finally {
+      setCategoryToDelete(null);
+    }
   };
 
   const getNumericValue = (): number => {
@@ -248,7 +273,18 @@ export default function CardTransaction({
 
       <AnimatedBottomSheet
         visible={showCategorySheet}
-        onClose={() => setShowCategorySheet(false)}
+        onClose={() => {
+          setEditMode(false);
+          setShowCategorySheet(false);
+        }}
+        onBackdropPress={() => {
+          if (editMode) {
+            setEditMode(false);
+          } else {
+            setCategorySearch("");
+            setShowCategorySheet(false);
+          }
+        }}
       >
         <View style={styles.sheetContainer}>
           <View style={styles.sheetHandle} />
@@ -302,6 +338,8 @@ export default function CardTransaction({
             >
               {filteredCategoryItems.map((item, index) => {
                 const isSelected = selectedCategory === item.value;
+                const isProtected = item.value === "General";
+
                 return (
                   <TouchableOpacity
                     key={item.value}
@@ -310,10 +348,13 @@ export default function CardTransaction({
                       isSelected && styles.sheetItemSelected,
                     ]}
                     onPress={() => {
+                      if (editMode) return;
                       setSelectedCategory(item.value);
                       setCategorySearch("");
                       setShowCategorySheet(false);
                     }}
+                    onLongPress={() => setEditMode(true)}
+                    delayLongPress={2000}
                     activeOpacity={0.7}
                   >
                     <View
@@ -328,11 +369,28 @@ export default function CardTransaction({
                         color={isSelected ? PRIMARY : "#64748B"}
                       />
                     </View>
+
                     {isSelected ? (
                       <View style={styles.sheetCheckBadge}>
                         <LucideIcon name="Check" size={12} color="#fff" />
                       </View>
                     ) : null}
+
+                    {editMode && !isProtected ? (
+                      <Animated.View
+                        entering={ZoomIn.duration(200)}
+                        exiting={ZoomOut.duration(150)}
+                        style={styles.deleteBadge}
+                      >
+                        <TouchableOpacity
+                          onPress={() => setCategoryToDelete(item)}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                          <LucideIcon name="X" size={12} color="#fff" />
+                        </TouchableOpacity>
+                      </Animated.View>
+                    ) : null}
+
                     <Text
                       style={[
                         styles.sheetItemLabel,
@@ -403,6 +461,23 @@ export default function CardTransaction({
           setOpenModal(false);
           onSubmit();
         }}
+      />
+      <CustomModal
+        visible={!!categoryToDelete}
+        title="¿Eliminar categoría?"
+        message={`Vas a eliminar "${categoryToDelete?.label}". Esta acción no se puede deshacer.`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setCategoryToDelete(null)}
+      />
+
+      <CustomModal
+        visible={!!blockedDeleteMessage}
+        title="No se puede eliminar"
+        message={blockedDeleteMessage ?? ""}
+        confirmText="Entendido"
+        onConfirm={() => setBlockedDeleteMessage(null)}
       />
     </>
   );
@@ -707,5 +782,18 @@ const styles = StyleSheet.create({
   iconOptionSelected: {
     backgroundColor: "#E5F7FF",
     borderColor: "#3B82F6",
+  },
+
+  deleteBadge: {
+    position: "absolute",
+    top: 6,
+    left: 6,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: "#EF4444",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 10,
   },
 });

@@ -22,12 +22,14 @@ const SAFE_TOP_MARGIN = 50;
 type Props = {
   visible: boolean;
   onClose: () => void;
+  onBackdropPress?: () => void;
   children: React.ReactNode;
 };
 
 export default function AnimatedBottomSheet({
   visible,
   onClose,
+  onBackdropPress,
   children,
 }: Props) {
   const [showModal, setShowModal] = useState(visible);
@@ -64,7 +66,6 @@ export default function AnimatedBottomSheet({
   }));
 
   const sheetStyle = useAnimatedStyle(() => {
-    // Posición real del borde superior, basada en la altura MEDIDA, no asumida
     const topPosition = SCREEN_HEIGHT - sheetHeight.value;
     const maxUpwardShift = -(topPosition - SAFE_TOP_MARGIN);
     const clampedKeyboardShift = Math.max(keyboardHeight.value, maxUpwardShift);
@@ -86,14 +87,13 @@ export default function AnimatedBottomSheet({
         <Animated.View style={[styles.backdropArea, backdropStyle]}>
           <TouchableOpacity
             style={StyleSheet.absoluteFill}
-            onPress={onClose}
+            onPress={onBackdropPress ?? onClose}
             activeOpacity={1}
           />
         </Animated.View>
         <Animated.View
           style={[styles.sheet, sheetStyle]}
           onLayout={(e) => {
-            // se actualiza cada vez que el contenido cambia de alto
             sheetHeight.value = e.nativeEvent.layout.height;
           }}
         >

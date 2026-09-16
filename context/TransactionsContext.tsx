@@ -42,6 +42,7 @@ type TxContextType = {
   removeTransaction: (id: string) => Promise<void>;
   updateTransaction: (id: string, tx: Partial<CreateTxInput>) => Promise<void>;
   addCategory: (name: string, icon?: string) => Promise<void>;
+  deleteCategory: (name: string) => Promise<void>;
 };
 
 const TransactionsContext = createContext<TxContextType>({
@@ -52,6 +53,7 @@ const TransactionsContext = createContext<TxContextType>({
   removeTransaction: async () => {},
   updateTransaction: async () => {},
   addCategory: async () => {},
+  deleteCategory: async () => {},
 });
 
 export const TransactionsProvider = ({
@@ -154,6 +156,30 @@ export const TransactionsProvider = ({
     });
   };
 
+  const deleteCategory = async (name: string) => {
+    if (!user) return;
+
+    const hasTransactions = transactions.some(
+      (tx) => tx.category.toLowerCase() === name.trim().toLowerCase(),
+    );
+
+    if (hasTransactions) {
+      throw new Error(
+        "No se puede eliminar: esta categoría tiene transacciones asociadas.",
+      );
+    }
+
+    const categoryToDelete = categories.find(
+      (c) => c.name.toLowerCase() === name.trim().toLowerCase(),
+    );
+
+    if (!categoryToDelete) return;
+
+    await deleteDoc(
+      doc(db, "users", user.uid, "categories", categoryToDelete.id),
+    );
+  };
+
   return (
     <TransactionsContext.Provider
       value={{
@@ -164,6 +190,7 @@ export const TransactionsProvider = ({
         removeTransaction,
         updateTransaction,
         addCategory,
+        deleteCategory,
       }}
     >
       {children}

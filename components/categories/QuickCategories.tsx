@@ -1,5 +1,4 @@
 import { useQuickCategories } from "@/hooks/useQuickCategories";
-import { LucideIcon } from "../ui/icons/LucideIcon";
 import {
   ScrollView,
   StyleSheet,
@@ -7,6 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { LucideIcon } from "../ui/icons/LucideIcon";
 
 import { PRIMARY_COLOR } from "@/constants/theme2";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
@@ -34,7 +34,13 @@ const QuickCategories = () => {
   const renderCategory = (cat: (typeof allCategories)[0], index: number) => (
     <TouchableOpacity
       key={index}
-      style={styles.item}
+      style={[
+        styles.card,
+        {
+          borderRightWidth: 3,
+          borderRightColor: cat.type === "expense" ? "#E53935" : "#2E7D32",
+        },
+      ]}
       onPress={() => handlePress(cat)}
       activeOpacity={0.7}
     >
@@ -46,15 +52,26 @@ const QuickCategories = () => {
       >
         <LucideIcon
           name={cat.icon}
-          size={26}
+          size={24}
           color={cat.type === "expense" ? "#E53935" : "#2E7D32"}
         />
       </View>
-      <Text style={styles.itemLabel} numberOfLines={1}>
+      <Text style={styles.itemLabel} numberOfLines={2}>
         {cat.label}
       </Text>
     </TouchableOpacity>
   );
+
+  const renderSectionTitle = (label: string, type: "expense" | "income") => {
+    const color = type === "expense" ? "#E53935" : "#2E7D32";
+    const bg = type === "expense" ? "#FFF0F0" : "#F0FFF4";
+    return (
+      <View style={[styles.sectionTitleBadge, { backgroundColor: bg }]}>
+        <View style={[styles.sectionTitleDot, { backgroundColor: color }]} />
+        <Text style={[styles.sectionTitleText, { color }]}>{label}</Text>
+      </View>
+    );
+  };
 
   const renderCategoryGrid = (categories: typeof allCategories) => {
     const rows = [];
@@ -66,6 +83,10 @@ const QuickCategories = () => {
         {rows.map((row, rowIndex) => (
           <View key={rowIndex} style={styles.row}>
             {row.map((cat, catIndex) => renderCategory(cat, catIndex))}
+            {row.length < 4 &&
+              Array.from({ length: 4 - row.length }).map((_, i) => (
+                <View key={`filler-${i}`} style={styles.cardFiller} />
+              ))}
           </View>
         ))}
       </View>
@@ -86,9 +107,9 @@ const QuickCategories = () => {
           {visibleCategories
             .slice(4, 7)
             .map((cat, i) => renderCategory(cat, i + 4))}
-          <TouchableOpacity style={styles.item} onPress={openAll}>
+          <TouchableOpacity style={styles.card} onPress={openAll}>
             <View style={[styles.iconBox, { backgroundColor: "#F3F4F6" }]}>
-              <LucideIcon name="Ellipsis" size={26} color="#6B7280" />
+              <LucideIcon name="Ellipsis" size={24} color="#6B7280" />
             </View>
             <Text style={styles.itemLabel}>Ver todo</Text>
           </TouchableOpacity>
@@ -100,7 +121,11 @@ const QuickCategories = () => {
           <View style={styles.sheetHandle} />
           <View style={styles.sheetHeader}>
             <Text style={styles.sheetTitle}>Todas las categorías</Text>
-            <TouchableOpacity onPress={closeAll} style={styles.closeButton}>
+            <TouchableOpacity
+              onPress={closeAll}
+              style={styles.closeButton}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
               <LucideIcon name="X" size={24} color="#374151" />
             </TouchableOpacity>
           </View>
@@ -110,12 +135,12 @@ const QuickCategories = () => {
             contentContainerStyle={styles.scrollContent}
           >
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Gastos</Text>
+              {renderSectionTitle("Gastos", "expense")}
               {renderCategoryGrid(expenseCategories)}
             </View>
 
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Ingresos</Text>
+            <View style={[styles.section, styles.lastSection]}>
+              {renderSectionTitle("Ingresos", "income")}
               {renderCategoryGrid(incomeCategories)}
             </View>
           </ScrollView>
@@ -167,18 +192,34 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
-    gap: 12,
+    gap: 10,
+    marginBottom: 12,
   },
-  item: {
+  card: {
     flex: 1,
     alignItems: "center",
-    gap: 10,
-    marginTop: 5,
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 6,
+    minHeight: 92,
+    borderWidth: 1,
+    borderColor: "#F1F2F4",
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  cardFiller: {
+    flex: 1,
   },
   iconBox: {
-    width: 54,
-    height: 54,
-    borderRadius: 16,
+    width: 48,
+    height: 48,
+    borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -187,6 +228,7 @@ const styles = StyleSheet.create({
     color: "#374151",
     textAlign: "center",
     fontWeight: "500",
+    lineHeight: 14,
   },
   sheet: {
     backgroundColor: "#FFFFFF",
@@ -194,6 +236,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     paddingTop: 16,
     paddingHorizontal: 16,
+    overflow: "hidden",
   },
   sheetHandle: {
     width: 40,
@@ -205,31 +248,56 @@ const styles = StyleSheet.create({
   },
   sheetHeader: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "center",
     alignItems: "center",
     marginBottom: 16,
+    position: "relative",
   },
   sheetTitle: {
     fontSize: 18,
     fontWeight: "700",
     color: "#111827",
+    textAlign: "center",
   },
   closeButton: {
+    position: "absolute",
+    right: 0,
     padding: 8,
     borderRadius: 8,
     backgroundColor: "#F3F4F6",
   },
+
   scrollContent: {
-    paddingBottom: 20,
+    paddingBottom: 48,
   },
   section: {
     marginBottom: 24,
   },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#111827",
+
+  lastSection: {
     marginBottom: 12,
+  },
+
+  sectionTitleBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    gap: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    marginBottom: 14,
+  },
+  sectionTitleDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  sectionTitleText: {
+    fontSize: 13,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
   grid: {
     flexDirection: "row",
