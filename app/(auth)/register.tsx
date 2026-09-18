@@ -2,11 +2,10 @@ import { registerUser } from "@/api/auth";
 import { RegisterIcon } from "@/components/ui/icons/icons";
 import { LucideIcon } from "@/components/ui/icons/LucideIcon";
 import { Link } from "expo-router";
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -64,142 +63,137 @@ export default function Register() {
       setLoading(false);
     }
   };
+
   return (
     <KeyboardAwareScrollView
       bottomOffset={50}
-      contentContainerStyle={styles.keyboardView}
+      contentContainerStyle={styles.screen}
       keyboardShouldPersistTaps="handled"
-      showsHorizontalScrollIndicator={false}
+      showsVerticalScrollIndicator={false}
     >
-      <ScrollView
-        contentContainerStyle={styles.screen}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.card}>
-          <View style={styles.hero}>
-            <View style={styles.logoCircle}>
-              <RegisterIcon size={24} color="white" />
-            </View>
-
-            <Text style={styles.heroTitle}>Money Manager</Text>
-
-            <View style={styles.containerSubtititle}>
-              <Text style={styles.heroSubtitle}>
-                La forma mas fácil dellevar el control de tus finanzas
-              </Text>
-
-              <Text style={styles.description}>
-                Tus finanzas, tu futuro. Únete a nosotros y empieza a gestionar
-                tus gastos e ingresos de manera sencilla y efectiva.
-              </Text>
-            </View>
+      <View style={styles.card}>
+        <View style={styles.hero}>
+          <View style={styles.logoCircle}>
+            <RegisterIcon size={24} color="white" />
           </View>
 
-          <View style={styles.form}>
-            <TextInput
-              placeholder="Nombre completo"
-              placeholderTextColor="#9CA3AF"
-              value={name}
-              onChangeText={setName}
-              style={styles.input}
-            />
+          <Text style={styles.heroTitle}>Money Manager</Text>
 
-            <TextInput
-              placeholder="Correo electrónico"
-              placeholderTextColor="#9CA3AF"
-              autoCapitalize="none"
-              value={email}
-              onChangeText={setEmail}
-              style={styles.input}
-            />
+          <View style={styles.containerSubtititle}>
+            <Text style={styles.heroSubtitle}>
+              La forma mas fácil dellevar el control de tus finanzas
+            </Text>
 
-            <View style={styles.inputWrapper}>
-              <TextInput
-                placeholder="Contraseña"
-                placeholderTextColor="#9CA3AF"
-                secureTextEntry={!showPassword}
-                value={password}
-                onChangeText={setPassword}
-                style={styles.inputInner}
-              />
-
-              <TouchableOpacity
-                onPress={() => setShowPassword((v) => !v)}
-                style={styles.eyeButton}
-              >
-                <LucideIcon
-                  name={showPassword ? "Eye" : "EyeOff"}
-                  size={20}
-                  color="#9CA3AF"
-                />
-              </TouchableOpacity>
-            </View>
-
-            <View
-              style={[
-                styles.inputWrapper,
-                confirmPassword.length > 0 && {
-                  borderColor:
-                    password === confirmPassword ? "#10B981" : "#C93545",
-                },
-              ]}
-            >
-              <TextInput
-                placeholder="Confirmar contraseña"
-                placeholderTextColor="#9CA3AF"
-                secureTextEntry={!showConfirmPassword}
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                style={styles.inputInner}
-              />
-
-              <TouchableOpacity
-                onPress={() => setShowConfirmPassword((v) => !v)}
-                style={styles.eyeButton}
-              >
-                <LucideIcon
-                  name={showConfirmPassword ? "Eye" : "EyeOff"}
-                  size={20}
-                  color="#9CA3AF"
-                />
-              </TouchableOpacity>
-            </View>
-
-            {confirmPassword.length > 0 && (
-              <Text
-                style={[
-                  styles.matchText,
-                  {
-                    color: password === confirmPassword ? "#10B981" : "#C93545",
-                  },
-                ]}
-              >
-                {password === confirmPassword
-                  ? "Las contraseñas coinciden"
-                  : "Las contraseñas no coinciden"}
-              </Text>
-            )}
-
-            {error ? <Text style={styles.error}>{error}</Text> : null}
-
-            <Pressable style={styles.button} onPress={handleRegister}>
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Registrarse</Text>
-              )}
-            </Pressable>
-
-            <Text style={styles.link}>
-              ¿ya tienes una cuenta?
-              <Link href="/(auth)/login">
-                <Text style={styles.linkBold}> Inicia sesion</Text>
-              </Link>
+            <Text style={styles.description}>
+              Tus finanzas, tu futuro. Únete a nosotros y empieza a gestionar
+              tus gastos e ingresos de manera sencilla y efectiva.
             </Text>
           </View>
         </View>
-      </ScrollView>
+
+        <View style={styles.form}>
+          <TextInput
+            placeholder="Nombre completo"
+            placeholderTextColor="#9CA3AF"
+            value={name}
+            onChangeText={setName}
+            style={styles.input}
+          />
+
+          <TextInput
+            placeholder="Correo electrónico"
+            placeholderTextColor="#9CA3AF"
+            autoCapitalize="none"
+            value={email}
+            onChangeText={setEmail}
+            style={styles.input}
+          />
+
+          <View style={styles.inputWrapper}>
+            <TextInput
+              placeholder="Contraseña"
+              placeholderTextColor="#9CA3AF"
+              secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={setPassword}
+              style={styles.inputInner}
+            />
+
+            <TouchableOpacity
+              onPress={() => setShowPassword((v) => !v)}
+              style={styles.eyeButton}
+            >
+              <LucideIcon
+                name={showPassword ? "Eye" : "EyeOff"}
+                size={20}
+                color="#9CA3AF"
+              />
+            </TouchableOpacity>
+          </View>
+
+          <View
+            style={[
+              styles.inputWrapper,
+              confirmPassword.length > 0 && {
+                borderColor:
+                  password === confirmPassword ? "#10B981" : "#C93545",
+              },
+            ]}
+          >
+            <TextInput
+              placeholder="Confirmar contraseña"
+              placeholderTextColor="#9CA3AF"
+              secureTextEntry={!showConfirmPassword}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              style={styles.inputInner}
+            />
+
+            <TouchableOpacity
+              onPress={() => setShowConfirmPassword((v) => !v)}
+              style={styles.eyeButton}
+            >
+              <LucideIcon
+                name={showConfirmPassword ? "Eye" : "EyeOff"}
+                size={20}
+                color="#9CA3AF"
+              />
+            </TouchableOpacity>
+          </View>
+
+          {confirmPassword.length > 0 && (
+            <Text
+              style={[
+                styles.matchText,
+                {
+                  color: password === confirmPassword ? "#10B981" : "#C93545",
+                },
+              ]}
+            >
+              {password === confirmPassword
+                ? "Las contraseñas coinciden"
+                : "Las contraseñas no coinciden"}
+            </Text>
+          )}
+
+          {error ? <Text style={styles.error}>{error}</Text> : null}
+
+          <Pressable style={styles.button} onPress={handleRegister}>
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Registrarse</Text>
+            )}
+          </Pressable>
+
+          <Text style={styles.link}>
+            ¿ya tienes una cuenta?
+            <Link href="/(auth)/login">
+              <Text style={styles.linkBold}> Inicia sesion</Text>
+            </Link>
+          </Text>
+        </View>
+      </View>
     </KeyboardAwareScrollView>
   );
 }
@@ -221,7 +215,6 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     elevation: 10,
   },
-  keyboardView: { flex: 1 },
   hero: {
     backgroundColor: "#3bb48eff",
     paddingVertical: 40,

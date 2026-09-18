@@ -159,16 +159,6 @@ export const TransactionsProvider = ({
   const deleteCategory = async (name: string) => {
     if (!user) return;
 
-    const hasTransactions = transactions.some(
-      (tx) => tx.category.toLowerCase() === name.trim().toLowerCase(),
-    );
-
-    if (hasTransactions) {
-      throw new Error(
-        "No se puede eliminar: esta categoría tiene transacciones asociadas.",
-      );
-    }
-
     const categoryToDelete = categories.find(
       (c) => c.name.toLowerCase() === name.trim().toLowerCase(),
     );

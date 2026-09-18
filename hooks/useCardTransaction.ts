@@ -46,6 +46,7 @@ export function useCardTransaction({
   const [blockedDeleteMessage, setBlockedDeleteMessage] = useState<
     string | null
   >(null);
+  const [showDeletedModal, setShowDeletedModal] = useState(false);
 
   // Guard contra doble-tap: useRef porque se actualiza de forma síncrona,
   // a diferencia de useState, así que bloquea el segundo tap aunque llegue
@@ -130,6 +131,7 @@ export function useCardTransaction({
       if (selectedCategory === categoryToDelete.value) {
         setSelectedCategory(null);
       }
+      setShowDeletedModal(true);
     } catch (err: any) {
       setBlockedDeleteMessage(
         err?.message || "No se pudo eliminar la categoría.",
@@ -233,6 +235,8 @@ export function useCardTransaction({
     deletingCategory,
     blockedDeleteMessage,
     setBlockedDeleteMessage,
+    showDeletedModal,
+    setShowDeletedModal,
 
     // modal de éxito
     openModal,

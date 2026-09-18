@@ -51,6 +51,8 @@ export default function CardTransaction({
     handleConfirmDelete,
     blockedDeleteMessage,
     setBlockedDeleteMessage,
+    showDeletedModal,
+    setShowDeletedModal,
 
     openModal,
     setOpenModal,
@@ -135,6 +137,14 @@ export default function CardTransaction({
         message={blockedDeleteMessage ?? ""}
         confirmText="Entendido"
         onConfirm={() => setBlockedDeleteMessage(null)}
+      />
+
+      <CustomModal
+        visible={showDeletedModal}
+        title="Categoría eliminada"
+        message="La categoría ha sido eliminada."
+        confirmText="Aceptar"
+        onConfirm={() => setShowDeletedModal(false)}
       />
     </>
   );
