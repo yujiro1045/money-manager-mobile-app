@@ -1,3 +1,4 @@
+import Avatar from "@/components/ui/Avatar";
 import { Colors } from "@/constants/theme";
 import { MUTED, TEXT } from "@/constants/theme2";
 import { useAuth } from "@/context/AuthContext";
@@ -7,7 +8,12 @@ export default function Header() {
   const { user } = useAuth();
   return (
     <View style={styles.header}>
-      <View style={styles.profilePlaceholder} />
+      <Avatar
+        photoURL={user?.photoURL}
+        email={user?.email}
+        size={42}
+        borderRadius={12}
+      />
       <View>
         <Text style={styles.greeting}>Bienvenido {user?.displayName}</Text>
         <Text style={styles.subtitle}>Tu resumen financiero de hoy</Text>
@@ -30,10 +36,4 @@ const styles = StyleSheet.create({
   },
   greeting: { fontSize: 20, fontWeight: "600", color: TEXT },
   subtitle: { marginTop: 4, color: MUTED, fontSize: 13 },
-  profilePlaceholder: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
-    backgroundColor: "#E6EEF9",
-  },
 });

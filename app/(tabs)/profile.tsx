@@ -1,9 +1,8 @@
 import { logoutUser } from "@/api/auth";
+import { LucideIcon } from "@/components/ui/icons/LucideIcon";
 import { BACKGROUND, CARD, MUTED, PRIMARY, TEXT } from "@/constants/theme2";
 import { useAuth } from "@/context/AuthContext";
-import { LucideIcon } from "@/components/ui/icons/LucideIcon";
 import { router } from "expo-router";
-import React from "react";
 import {
   Alert,
   ScrollView,
@@ -32,41 +31,49 @@ type MenuItemProps = {
   danger?: boolean;
 };
 
-const MenuItem = ({ icon, label, value, onPress, danger }: MenuItemProps) => (
-  <TouchableOpacity
-    style={styles.menuItem}
-    onPress={onPress}
-    activeOpacity={0.6}
-  >
-    <View style={[styles.menuIconBox, danger && { backgroundColor: "#FEE2E2" }]}>
-      <LucideIcon
-        name={icon}
-        size={20}
-        color={danger ? "#DC2626" : PRIMARY}
-      />
-    </View>
-    <Text style={[styles.menuLabel, danger && { color: "#DC2626" }]}>
-      {label}
-    </Text>
-    <View style={styles.menuRight}>
-      {value ? <Text style={styles.menuValue}>{value}</Text> : null}
-      <LucideIcon name="ChevronRight" size={16} color="#CBD5E1" />
-    </View>
-  </TouchableOpacity>
-);
+const MenuItem = ({ icon, label, value, onPress, danger }: MenuItemProps) => {
+  // Si no hay onPress, no tiene sentido envolver en TouchableOpacity: se
+  // veía "tocable" (bajaba la opacidad al presionar) aunque no pasara
+  // nada, como el caso de "Lenguaje" mientras no está implementado.
+  const Wrapper = onPress ? TouchableOpacity : View;
+
+  return (
+    <Wrapper
+      style={styles.menuItem}
+      onPress={onPress}
+      activeOpacity={onPress ? 0.6 : 1}
+    >
+      <View
+        style={[styles.menuIconBox, danger && { backgroundColor: "#FEE2E2" }]}
+      >
+        <LucideIcon
+          name={icon}
+          size={20}
+          color={danger ? "#DC2626" : PRIMARY}
+        />
+      </View>
+      <Text style={[styles.menuLabel, danger && { color: "#DC2626" }]}>
+        {label}
+      </Text>
+      <View style={styles.menuRight}>
+        {value ? <Text style={styles.menuValue}>{value}</Text> : null}
+        {/* La flecha solo tiene sentido si el item navega/hace algo */}
+        {onPress ? (
+          <LucideIcon name="ChevronRight" size={16} color="#CBD5E1" />
+        ) : null}
+      </View>
+    </Wrapper>
+  );
+};
 
 export default function Profile() {
   const { loading, user } = useAuth();
 
   const handleLogout = () => {
-    Alert.alert(
-      "Cerrar sesión",
-      "¿Estás seguro de que deseas cerrar sesión?",
-      [
-        { text: "Cancelar", style: "cancel" },
-        { text: "Cerrar sesión", style: "destructive", onPress: logoutUser },
-      ],
-    );
+    Alert.alert("Cerrar sesión", "¿Estás seguro de que deseas cerrar sesión?", [
+      { text: "Cancelar", style: "cancel" },
+      { text: "Cerrar sesión", style: "destructive", onPress: logoutUser },
+    ]);
   };
 
   if (loading || !user) {
@@ -118,12 +125,16 @@ export default function Profile() {
             <MenuItem icon="BadgeQuestionMark" label="Centro de ayuda" />
           </View>
 
-          <MenuItem
-            icon="LogOut"
-            label="Cerrar sesión"
-            onPress={handleLogout}
-            danger
-          />
+          {/* Antes quedaba suelto fuera de cualquier card, sin la misma
+              consistencia visual que las secciones de arriba */}
+          <View style={styles.card}>
+            <MenuItem
+              icon="LogOut"
+              label="Cerrar sesión"
+              onPress={handleLogout}
+              danger
+            />
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
