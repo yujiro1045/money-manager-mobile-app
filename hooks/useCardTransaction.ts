@@ -47,8 +47,16 @@ export function useCardTransaction({
     string | null
   >(null);
 
+  // Guard contra doble-tap: useRef porque se actualiza de forma síncrona,
+  // a diferencia de useState, así que bloquea el segundo tap aunque llegue
+  // antes de que React vuelva a renderizar con el botón deshabilitado.
   const isSubmittingRef = useRef(false);
   const [submitting, setSubmitting] = useState(false);
+
+  // Mismo guard aplicado a eliminar categoría, mientras se conecta un
+  // loader visual en el botón "Eliminar" del CustomModal.
+  const isDeletingRef = useRef(false);
+  const [deletingCategory, setDeletingCategory] = useState(false);
 
   const allCategoryItems: CategoryItem[] = [
     ...DEFAULT_CATEGORIES,
@@ -112,6 +120,11 @@ export function useCardTransaction({
 
   const handleConfirmDelete = async () => {
     if (!categoryToDelete) return;
+    if (isDeletingRef.current) return; // bloqueo síncrono contra doble-tap
+
+    isDeletingRef.current = true;
+    setDeletingCategory(true);
+
     try {
       await deleteCategory(categoryToDelete.value);
       if (selectedCategory === categoryToDelete.value) {
@@ -123,8 +136,13 @@ export function useCardTransaction({
       );
     } finally {
       setCategoryToDelete(null);
+      isDeletingRef.current = false;
+      setDeletingCategory(false);
     }
   };
+
+  // Toggle explícito para el botón "Editar"/"Listo" del header del sheet.
+  const toggleEditMode = () => setEditMode((prev) => !prev);
 
   const getNumericValue = (): number => {
     return Number(amount.replace(/\./g, ""));
@@ -205,12 +223,14 @@ export function useCardTransaction({
     setCategorySearch,
     editMode,
     setEditMode,
+    toggleEditMode,
     filteredCategoryItems,
 
     // eliminar categoría
     categoryToDelete,
     setCategoryToDelete,
     handleConfirmDelete,
+    deletingCategory,
     blockedDeleteMessage,
     setBlockedDeleteMessage,
 

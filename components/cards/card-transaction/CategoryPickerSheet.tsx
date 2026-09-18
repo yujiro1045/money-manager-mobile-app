@@ -18,6 +18,7 @@ const SCREEN_HEIGHT = Dimensions.get("window").height;
 type Props = {
   visible: boolean;
   editMode: boolean;
+  onToggleEditMode: () => void;
   onCloseEditMode: () => void;
   onClose: () => void;
   categorySearch: string;
@@ -25,13 +26,13 @@ type Props = {
   filteredCategoryItems: CategoryItem[];
   selectedCategory: string | null;
   onSelectCategory: (value: string) => void;
-  onLongPressItem: () => void;
   onDeleteItem: (item: CategoryItem) => void;
 };
 
 export default function CategoryPickerSheet({
   visible,
   editMode,
+  onToggleEditMode,
   onCloseEditMode,
   onClose,
   categorySearch,
@@ -39,7 +40,6 @@ export default function CategoryPickerSheet({
   filteredCategoryItems,
   selectedCategory,
   onSelectCategory,
-  onLongPressItem,
   onDeleteItem,
 }: Props) {
   return (
@@ -62,15 +62,38 @@ export default function CategoryPickerSheet({
         <View style={styles.sheetHandle} />
         <View style={styles.sheetHeader}>
           <Text style={styles.sheetTitle}>Selecciona categoría</Text>
-          <TouchableOpacity
-            onPress={() => {
-              onChangeSearch("");
-              onClose();
-            }}
-            style={styles.sheetClose}
-          >
-            <LucideIcon name="X" size={22} color="#94A3B8" />
-          </TouchableOpacity>
+          <View style={styles.sheetHeaderActions}>
+            {/* Botón explícito de edición: antes solo se entraba con un
+                long-press de 2s sin ninguna pista visual, y la única forma
+                de salir era tocar el backdrop. Ahora es un botón visible
+                que además sirve para salir ("Listo"). */}
+            <TouchableOpacity
+              onPress={onToggleEditMode}
+              style={styles.editToggle}
+            >
+              <Text
+                style={[
+                  styles.editToggleText,
+                  editMode && styles.editToggleTextActive,
+                ]}
+              >
+                {editMode ? "Listo" : "Editar"}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                // Antes esto no llamaba a onCloseEditMode(): si cerrabas el
+                // sheet en modo edición, la próxima vez que lo abrías seguía
+                // en modo edición sin que hicieras nada.
+                onCloseEditMode();
+                onChangeSearch("");
+                onClose();
+              }}
+              style={styles.sheetClose}
+            >
+              <LucideIcon name="X" size={22} color="#94A3B8" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={styles.searchBox}>
@@ -123,7 +146,6 @@ export default function CategoryPickerSheet({
                     if (editMode) return;
                     onSelectCategory(item.value);
                   }}
-                  onLongPress={onLongPressItem}
                   onDelete={() => onDeleteItem(item)}
                 />
               );
@@ -154,6 +176,25 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 16,
     paddingHorizontal: 4,
+  },
+  sheetHeaderActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  editToggle: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 14,
+    backgroundColor: "#F3F4F6",
+  },
+  editToggleText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#64748B",
+  },
+  editToggleTextActive: {
+    color: "#3B82F6",
   },
   sheetTitle: {
     fontSize: 18,

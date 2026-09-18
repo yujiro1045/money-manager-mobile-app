@@ -43,6 +43,7 @@ export default function CardTransaction({
     setCategorySearch,
     editMode,
     setEditMode,
+    toggleEditMode,
     filteredCategoryItems,
 
     categoryToDelete,
@@ -55,12 +56,15 @@ export default function CardTransaction({
     setOpenModal,
   } = useCardTransaction({ defaultCategory, defaultType, defaultIcon });
 
+  // Al elegir una categoría del sheet, se guarda, se limpia la búsqueda y
+  // se cierra el sheet — los 3 pasos que antes vivían inline en el JSX.
   const handleSelectCategory = (value: string) => {
     setSelectedCategory(value);
     setCategorySearch("");
     setShowCategorySheet(false);
   };
 
+  // Igual con el ícono: se guarda y se cierra el modal.
   const handleSelectIcon = (icon: string) => {
     setPickerIcon(icon);
     setShowIconPicker(false);
@@ -87,6 +91,7 @@ export default function CardTransaction({
       <CategoryPickerSheet
         visible={showCategorySheet}
         editMode={editMode}
+        onToggleEditMode={toggleEditMode}
         onCloseEditMode={() => setEditMode(false)}
         onClose={() => setShowCategorySheet(false)}
         categorySearch={categorySearch}
@@ -94,7 +99,6 @@ export default function CardTransaction({
         filteredCategoryItems={filteredCategoryItems}
         selectedCategory={selectedCategory}
         onSelectCategory={handleSelectCategory}
-        onLongPressItem={() => setEditMode(true)}
         onDeleteItem={setCategoryToDelete}
       />
 

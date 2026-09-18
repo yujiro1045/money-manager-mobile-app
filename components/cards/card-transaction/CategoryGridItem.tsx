@@ -10,7 +10,6 @@ type Props = {
   isProtected: boolean;
   editMode: boolean;
   onPress: () => void;
-  onLongPress: () => void;
   onDelete: () => void;
 };
 
@@ -20,15 +19,12 @@ export default function CategoryGridItem({
   isProtected,
   editMode,
   onPress,
-  onLongPress,
   onDelete,
 }: Props) {
   return (
     <TouchableOpacity
       style={[styles.sheetItem, isSelected && styles.sheetItemSelected]}
       onPress={onPress}
-      onLongPress={onLongPress}
-      delayLongPress={2000}
       activeOpacity={0.7}
     >
       <View
@@ -62,6 +58,19 @@ export default function CategoryGridItem({
           >
             <LucideIcon name="X" size={12} color="#fff" />
           </TouchableOpacity>
+        </Animated.View>
+      ) : null}
+
+      {/* Antes "General" simplemente no mostraba nada en modo edición, lo
+          que se veía como un bug (¿por qué esta no tiene el badge rojo?).
+          El candado comunica explícitamente "está protegida". */}
+      {editMode && isProtected ? (
+        <Animated.View
+          entering={ZoomIn.duration(200)}
+          exiting={ZoomOut.duration(150)}
+          style={styles.lockBadge}
+        >
+          <LucideIcon name="Lock" size={11} color="#fff" />
         </Animated.View>
       ) : null}
 
@@ -138,6 +147,18 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 10,
     backgroundColor: "#EF4444",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 10,
+  },
+  lockBadge: {
+    position: "absolute",
+    top: 6,
+    left: 6,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: "#94A3B8",
     alignItems: "center",
     justifyContent: "center",
     zIndex: 10,
