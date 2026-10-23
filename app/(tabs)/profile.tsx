@@ -32,9 +32,6 @@ type MenuItemProps = {
 };
 
 const MenuItem = ({ icon, label, value, onPress, danger }: MenuItemProps) => {
-  // Si no hay onPress, no tiene sentido envolver en TouchableOpacity: se
-  // veía "tocable" (bajaba la opacidad al presionar) aunque no pasara
-  // nada, como el caso de "Lenguaje" mientras no está implementado.
   const Wrapper = onPress ? TouchableOpacity : View;
 
   return (
@@ -57,7 +54,6 @@ const MenuItem = ({ icon, label, value, onPress, danger }: MenuItemProps) => {
       </Text>
       <View style={styles.menuRight}>
         {value ? <Text style={styles.menuValue}>{value}</Text> : null}
-        {/* La flecha solo tiene sentido si el item navega/hace algo */}
         {onPress ? (
           <LucideIcon name="ChevronRight" size={16} color="#CBD5E1" />
         ) : null}
@@ -125,8 +121,6 @@ export default function Profile() {
             <MenuItem icon="BadgeQuestionMark" label="Centro de ayuda" />
           </View>
 
-          {/* Antes quedaba suelto fuera de cualquier card, sin la misma
-              consistencia visual que las secciones de arriba */}
           <View style={styles.card}>
             <MenuItem
               icon="LogOut"

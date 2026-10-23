@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   FlatList,
   Modal,
@@ -9,7 +10,10 @@ import {
 import { LUCIDE_CATEGORIES } from "../../ui/icons/lucideCategories";
 import { LucideIcon } from "../../ui/icons/LucideIcon";
 
-const ICON_LIST = LUCIDE_CATEGORIES;
+const MAX_ICONS = 200;
+const PAGE_SIZE = 40;
+
+const ICONS = LUCIDE_CATEGORIES.slice(0, MAX_ICONS);
 
 type Props = {
   visible: boolean;
@@ -30,41 +34,82 @@ export default function IconPickerModal({
       transparent
       animationType="slide"
       statusBarTranslucent
+      onRequestClose={onClose}
     >
-      <View style={styles.iconPickerContainer}>
-        <View style={styles.iconPickerContent}>
-          <View style={styles.iconPickerHeader}>
-            <Text style={styles.iconPickerTitle}>Selecciona un icono</Text>
-            <TouchableOpacity onPress={onClose}>
-              <Text style={styles.iconPickerClose}>✕</Text>
-            </TouchableOpacity>
-          </View>
-
-          <FlatList
-            data={ICON_LIST}
-            numColumns={5}
-            keyExtractor={(item, index) => index.toString()}
-            scrollEnabled={true}
-            contentContainerStyle={styles.iconGrid}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[
-                  styles.iconOption,
-                  pickerIcon === item && styles.iconOptionSelected,
-                ]}
-                onPress={() => onSelectIcon(item)}
-              >
-                <LucideIcon
-                  name={item}
-                  size={24}
-                  color={pickerIcon === item ? "#3B82F6" : "#6B7280"}
-                />
-              </TouchableOpacity>
-            )}
-          />
-        </View>
-      </View>
+      {/* Se monta solo mientras el modal está abierto: así la cantidad
+          visible vuelve a 40 sin necesidad de useEffect. */}
+      {visible && (
+        <IconPickerContent
+          onClose={onClose}
+          pickerIcon={pickerIcon}
+          onSelectIcon={onSelectIcon}
+        />
+      )}
     </Modal>
+  );
+}
+
+function IconPickerContent({
+  onClose,
+  pickerIcon,
+  onSelectIcon,
+}: Omit<Props, "visible">) {
+  const icons = ICONS;
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  const data = icons.slice(0, visibleCount);
+  const hasMore = visibleCount < icons.length;
+
+  return (
+    <View style={styles.iconPickerContainer}>
+      <View style={styles.iconPickerContent}>
+        <View style={styles.iconPickerHeader}>
+          <Text style={styles.iconPickerTitle}>Selecciona un icono</Text>
+          <TouchableOpacity onPress={onClose}>
+            <Text style={styles.iconPickerClose}>✕</Text>
+          </TouchableOpacity>
+        </View>
+
+        <FlatList
+          data={data}
+          numColumns={5}
+          keyExtractor={(item, index) => `${item}-${index}`}
+          contentContainerStyle={styles.iconGrid}
+          initialNumToRender={PAGE_SIZE}
+          removeClippedSubviews
+          ListFooterComponent={
+            hasMore ? (
+              <TouchableOpacity
+                style={styles.loadMoreButton}
+                onPress={() =>
+                  setVisibleCount((c) => Math.min(c + PAGE_SIZE, icons.length))
+                }
+                activeOpacity={0.7}
+              >
+                <Text style={styles.loadMoreText}>
+                  Cargar más ({visibleCount}/{icons.length})
+                </Text>
+              </TouchableOpacity>
+            ) : null
+          }
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={[
+                styles.iconOption,
+                pickerIcon === item && styles.iconOptionSelected,
+              ]}
+              onPress={() => onSelectIcon(item)}
+            >
+              <LucideIcon
+                name={item}
+                size={24}
+                color={pickerIcon === item ? "#3B82F6" : "#6B7280"}
+              />
+            </TouchableOpacity>
+          )}
+        />
+      </View>
+    </View>
   );
 }
 
@@ -113,6 +158,18 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "transparent",
     minWidth: "18%",
+  },
+  loadMoreButton: {
+    marginTop: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
+    backgroundColor: "#EFF6FF",
+  },
+  loadMoreText: {
+    color: "#3B82F6",
+    fontWeight: "600",
+    fontSize: 14,
   },
   iconOptionSelected: {
     backgroundColor: "#E5F7FF",

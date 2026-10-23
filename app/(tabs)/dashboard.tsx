@@ -59,25 +59,14 @@ export default function DashboardScreen() {
   const currentTrendData = balanceLine[selectedTrendMonth];
   const currentExpenseData = expenseLine[selectedTrendMonth];
 
-  // maxValue explícito: si dejamos que gifted-charts lo infiera solo, calcula
-  // la escala del eje Y una sola vez al montar el componente y NO la vuelve
-  // a recalcular cuando cambian los valores (solo si se desmonta y vuelve a
-  // montar). Al calcularlo nosotros mismos con base en los datos actuales,
-  // la escala siempre corresponde al mes/momento real, así una barra sí
-  // puede crecer y superar a la otra apenas cambien los datos.
   const chartMaxValue = React.useMemo(() => {
     const highest = Math.max(
       currentTrendData?.value ?? 0,
       currentExpenseData?.value ?? 0,
     );
-    return highest > 0 ? Math.ceil(highest * 1.2) : 100; // +20% de margen arriba
+    return highest > 0 ? Math.ceil(highest * 1.2) : 100;
   }, [currentTrendData?.value, currentExpenseData?.value]);
 
-  // key único por mes + valores: obliga a React a desmontar y volver a
-  // montar el BarChart cuando cambian los datos que representa, en vez de
-  // reusar la instancia anterior (que es justo lo que hace que se quede
-  // con el tamaño/escala vieja al cambiar de tab o al llegar una
-  // transacción nueva en el mismo mes).
   const chartKey = `${selectedTrendMonth}-${currentTrendData?.value ?? 0}-${currentExpenseData?.value ?? 0}`;
 
   return (
